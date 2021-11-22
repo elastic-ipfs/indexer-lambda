@@ -1,6 +1,7 @@
 'use strict'
 
 const { DynamoDBClient, GetItemCommand, ExecuteStatementCommand } = require('@aws-sdk/client-dynamodb')
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const {
   marshall: serializeDynamoItem,
@@ -11,8 +12,14 @@ const { Agent } = require('https')
 
 const { logger, serializeError } = require('./logging')
 
+const agent = new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
+
 const dynamoClient = new DynamoDBClient({
-  requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
+  requestHandler: new NodeHttpHandler({ httpsAgent: agent })
+})
+
+const sqsClient = new SQSClient({
+  requestHandler: new NodeHttpHandler({ httpsAgent: agent })
 })
 
 async function readDynamoItem(table, keyName, keyValue) {
@@ -69,8 +76,18 @@ async function writeDynamoItem(create, table, keyName, keyValue, data) {
   } catch (e) {
     logger.error(
       { statement },
-      `Cannot ${create ? 'insert item into' : 'update item in'}  DynamoDB table ${table}: ${serializeError(e)}`
+      `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}: ${serializeError(e)}`
     )
+
+    throw e
+  }
+}
+
+async function publishToSQS(queue, data) {
+  try {
+    await sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
+  } catch (e) {
+    logger.error(`Cannot publish a block to ${queue}: ${serializeError(e)}`)
 
     throw e
   }
@@ -78,5 +95,6 @@ async function writeDynamoItem(create, table, keyName, keyValue, data) {
 
 module.exports = {
   readDynamoItem,
-  writeDynamoItem
+  writeDynamoItem,
+  publishToSQS
 }

@@ -4,10 +4,10 @@ const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
 
-const { codecs, blocksTable, primaryKeys, carsTable } = require('./config')
+const { codecs, blocksTable, primaryKeys, carsTable, publishingQueue } = require('./config')
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
-const { readDynamoItem, writeDynamoItem } = require('./storage-dynamo')
+const { readDynamoItem, writeDynamoItem, publishToSQS } = require('./storage')
 const { forEach } = require('hwp')
 
 function decodeBlock(block) {
@@ -37,14 +37,14 @@ async function storeNewBlock(car, type, block, data = {}) {
 
   const cid = block.cid.toString()
 
-  return writeDynamoItem(true, blocksTable, primaryKeys.blocks, cid, {
+  await writeDynamoItem(true, blocksTable, primaryKeys.blocks, cid, {
     type,
     createdAt: new Date().toISOString(),
     cars: [{ car, offset: block.blockOffset, length: block.blockLength }],
     data
   })
 
-  // TODO: Publish to SQS
+  return publishToSQS(publishingQueue, cid)
 }
 
 async function appendCarToBlock(block, cars, carId) {

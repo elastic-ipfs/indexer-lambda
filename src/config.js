@@ -2,7 +2,11 @@
 
 require('dotenv').config()
 
-const { DYNAMO_BLOCKS_TABLE: blocksTable, DYNAMO_CARS_TABLE: carsTable } = process.env
+const {
+  DYNAMO_BLOCKS_TABLE: blocksTable,
+  DYNAMO_CARS_TABLE: carsTable,
+  SQS_PUBLISHING_QUEUE: publishingQueue
+} = process.env
 
 // Load all supported codecs
 const supportedCodes = {
@@ -22,6 +26,7 @@ const codecs = Object.entries(supportedCodes).reduce((accu, [label, mod]) => {
 module.exports = {
   blocksTable: blocksTable ?? 'blocks',
   carsTable: carsTable ?? 'cars',
+  publishingQueue: publishingQueue ?? 'publishingQueue',
   primaryKeys: {
     blocks: 'cid',
     cars: 'path'
