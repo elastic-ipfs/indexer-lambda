@@ -1,6 +1,11 @@
 'use strict'
 
-const { DynamoDBClient, GetItemCommand, ExecuteStatementCommand } = require('@aws-sdk/client-dynamodb')
+const {
+  DynamoDBClient,
+  GetItemCommand,
+  ExecuteStatementCommand,
+  DeleteItemCommand
+} = require('@aws-sdk/client-dynamodb')
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const {
@@ -39,9 +44,10 @@ async function readDynamoItem(table, keyName, keyValue) {
   }
 }
 
-async function writeDynamoItem(create, table, keyName, keyValue, data) {
+async function writeDynamoItem(create, table, keyName, keyValue, data, conditions = {}) {
   const expression = []
   const values = []
+  let conditionsExpression = []
   let statement
 
   if (create) {
@@ -65,8 +71,17 @@ async function writeDynamoItem(create, table, keyName, keyValue, data) {
 
     values.push(convertToAttr(keyValue, { removeUndefinedValues: true }))
 
+    for (const [key, [operator, value]] of Object.entries(conditions)) {
+      conditionsExpression.push(`"${key}" ${operator} ?`)
+      values.push(convertToAttr(value, { removeUndefinedValues: true }))
+    }
+
+    if (conditionsExpression.length) {
+      conditionsExpression = `AND ${conditionsExpression.join(' AND ')}`
+    }
+
     statement = {
-      Statement: `UPDATE ${table} ${expression.join(' ')} WHERE ${keyName} = ?`,
+      Statement: `UPDATE ${table} ${expression.join(' ')} WHERE ${keyName} = ? ${conditionsExpression}`,
       Parameters: values
     }
   }
@@ -74,11 +89,27 @@ async function writeDynamoItem(create, table, keyName, keyValue, data) {
   try {
     await dynamoClient.send(new ExecuteStatementCommand(statement))
   } catch (e) {
+    // Ignore condition failure errors in updates
+    if (!create && e.name === 'ConditionalCheckFailedException') {
+      return
+    }
+
     logger.error(
       { statement },
       `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}: ${serializeError(e)}`
     )
 
+    throw e
+  }
+}
+
+async function deleteDynamoItem(table, keyName, keyValue) {
+  try {
+    return await dynamoClient.send(
+      new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) })
+    )
+  } catch (e) {
+    logger.error(`Cannot delete item from DynamoDB table ${table}: ${serializeError(e)}`)
     throw e
   }
 }
@@ -96,5 +127,6 @@ async function publishToSQS(queue, data) {
 module.exports = {
   readDynamoItem,
   writeDynamoItem,
+  deleteDynamoItem,
   publishToSQS
 }

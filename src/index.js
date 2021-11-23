@@ -7,7 +7,7 @@ const {
 const { codecs, blocksTable, primaryKeys, carsTable, publishingQueue } = require('./config')
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
-const { readDynamoItem, writeDynamoItem, publishToSQS } = require('./storage')
+const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS } = require('./storage')
 const { forEach } = require('hwp')
 
 function decodeBlock(block) {
@@ -28,6 +28,27 @@ function decodeBlock(block) {
   }
 
   return { codec: codec.label, data }
+}
+
+async function updateCarStatus(carId, block) {
+  const currentPosition = block.offset + block.length
+
+  /*
+    The condition is needed if another block, next to this one,
+    has been evaluated first. This can happen due to hwp induced parallelism.
+  */
+  return writeDynamoItem(
+    false,
+    carsTable,
+    'path',
+    carId,
+    {
+      currentPosition
+    },
+    {
+      currentPosition: ['<', currentPosition]
+    }
+  )
 }
 
 async function storeNewBlock(car, type, block, data = {}) {
@@ -93,17 +114,22 @@ async function main(event) {
     // Load the file from input
     const indexer = await openS3Stream(car)
 
-    // Store the initial information of the CAR
-    await writeDynamoItem(true, carsTable, primaryKeys.cars, carId, {
-      bucket: record.s3.bucket.name,
-      key: record.s3.object.key,
-      createdAt: new Date().toISOString(),
-      roots: new Set(indexer.roots.map(r => r.toString())),
-      version: indexer.version,
-      fileSize: indexer.length,
-      currentPosition: indexer.length,
-      completed: false
-    })
+    // If the CAR is existing and not completed, just move the stream to the last analyzed block
+    if (existingCar) {
+      indexer.reader.seek(existingCar.currentPosition - indexer.reader.pos)
+    } else {
+      // Store the initial information of the CAR
+      await writeDynamoItem(true, carsTable, primaryKeys.cars, carId, {
+        bucket: record.s3.bucket.name,
+        key: record.s3.object.key,
+        createdAt: new Date().toISOString(),
+        roots: new Set(indexer.roots.map(r => r.toString())),
+        version: indexer.version,
+        fileSize: indexer.length,
+        currentPosition: indexer.reader.pos,
+        completed: false
+      })
+    }
 
     // For each block in the indexer (which holds the start and end block)
     await forEach(indexer, async function (block) {
@@ -122,8 +148,21 @@ async function main(event) {
       // If the block is already in the storage, fetch it and then just update CAR informations
       const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, block.cid.toString())
       if (existingBlock) {
-        await appendCarToBlock(block, existingBlock.cars, carId)
-        return
+        /*
+          If the block has only one CAR and it is the current car, 
+          it means the same file is somehow analyzed again.
+          Delete the old information in order to have a clean state.
+        */
+        const allCars = new Set(existingBlock.cars.map(c => c.car))
+
+        if (allCars.size === 1 && allCars.has(carId)) {
+          await deleteDynamoItem(blocksTable, primaryKeys.blocks, block.cid.toString())
+          await updateCarStatus(carId, block)
+        } else {
+          await appendCarToBlock(block, existingBlock.cars, carId)
+          await updateCarStatus(carId, block)
+          return
+        }
       }
 
       // Store the block according to the contents
@@ -133,6 +172,9 @@ async function main(event) {
         const { codec, data } = decodeBlock(block)
         await storeNewBlock(carId, codec, block, data)
       }
+
+      // Update the information about the CAR analysis progress
+      await updateCarStatus(carId, block)
     })
 
     // Mark the CAR as completed
