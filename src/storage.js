@@ -3,8 +3,9 @@
 const {
   DynamoDBClient,
   GetItemCommand,
-  ExecuteStatementCommand,
-  DeleteItemCommand
+  PutItemCommand,
+  DeleteItemCommand,
+  UpdateItemCommand
 } = require('@aws-sdk/client-dynamodb')
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
@@ -14,6 +15,7 @@ const {
   convertToAttr
 } = require('@aws-sdk/util-dynamodb')
 const { Agent } = require('https')
+const { toHexString } = require('multihashes')
 
 const { logger, serializeError } = require('./logging')
 
@@ -26,6 +28,10 @@ const dynamoClient = new DynamoDBClient({
 const sqsClient = new SQSClient({
   requestHandler: new NodeHttpHandler({ httpsAgent: agent })
 })
+
+function cidToKey(cid) {
+  return toHexString(cid.multihash.digest)
+}
 
 async function readDynamoItem(table, keyName, keyValue) {
   try {
@@ -45,49 +51,39 @@ async function readDynamoItem(table, keyName, keyValue) {
 }
 
 async function writeDynamoItem(create, table, keyName, keyValue, data, conditions = {}) {
-  const expression = []
-  const values = []
-  let conditionsExpression = []
-  let statement
+  let command
 
   if (create) {
-    expression.push(`'${keyName}': ?`)
-    values.push(convertToAttr(keyValue, { removeUndefinedValues: true }))
-
-    for (const [key, value] of Object.entries(data)) {
-      expression.push(`'${key}': ?`)
-      values.push(convertToAttr(value, { removeUndefinedValues: true }))
-    }
-
-    statement = {
-      Statement: `INSERT INTO ${table} VALUE {${expression.join(', ')}}`,
-      Parameters: values
-    }
+    command = new PutItemCommand({
+      TableName: table,
+      Item: serializeDynamoItem({ [keyName]: keyValue, ...data }, { removeUndefinedValues: true })
+    })
   } else {
-    for (const [key, value] of Object.entries(data)) {
-      expression.push(`SET "${key}" = ?`)
-      values.push(convertToAttr(value, { removeUndefinedValues: true }))
-    }
+    const update = []
+    const values = {}
+    const condition = []
 
-    values.push(convertToAttr(keyValue, { removeUndefinedValues: true }))
+    for (const [key, value] of Object.entries(data)) {
+      update.push(`${key} = :${key}`)
+      values[`:${key}`] = value
+    }
 
     for (const [key, [operator, value]] of Object.entries(conditions)) {
-      conditionsExpression.push(`"${key}" ${operator} ?`)
-      values.push(convertToAttr(value, { removeUndefinedValues: true }))
+      condition.push(`${key} ${operator} :${key}Condition`)
+      values[`:${key}Condition`] = value
     }
 
-    if (conditionsExpression.length) {
-      conditionsExpression = `AND ${conditionsExpression.join(' AND ')}`
-    }
-
-    statement = {
-      Statement: `UPDATE ${table} ${expression.join(' ')} WHERE ${keyName} = ? ${conditionsExpression}`,
-      Parameters: values
-    }
+    command = new UpdateItemCommand({
+      TableName: table,
+      Key: { [keyName]: convertToAttr(keyValue) },
+      UpdateExpression: `SET ${update.join(', ')}`,
+      ConditionExpression: condition.length ? condition.join(' AND ') : undefined,
+      ExpressionAttributeValues: serializeDynamoItem(values, { removeUndefinedValues: true })
+    })
   }
 
   try {
-    await dynamoClient.send(new ExecuteStatementCommand(statement))
+    await dynamoClient.send(command)
   } catch (e) {
     // Ignore condition failure errors in updates
     if (!create && e.name === 'ConditionalCheckFailedException') {
@@ -95,7 +91,7 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
     }
 
     logger.error(
-      { statement },
+      { command },
       `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}: ${serializeError(e)}`
     )
 
@@ -125,6 +121,7 @@ async function publishToSQS(queue, data) {
 }
 
 module.exports = {
+  cidToKey,
   readDynamoItem,
   writeDynamoItem,
   deleteDynamoItem,

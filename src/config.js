@@ -3,6 +3,7 @@
 require('dotenv').config()
 
 const {
+  CONCURRENCY: rawConcurrency,
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
   SQS_PUBLISHING_QUEUE: publishingQueue
@@ -23,12 +24,15 @@ const codecs = Object.entries(supportedCodes).reduce((accu, [label, mod]) => {
   return accu
 }, {})
 
+const concurrency = parseInt(rawConcurrency)
+
 module.exports = {
+  concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 16,
   blocksTable: blocksTable ?? 'blocks',
   carsTable: carsTable ?? 'cars',
   publishingQueue: publishingQueue ?? 'publishingQueue',
   primaryKeys: {
-    blocks: 'cid',
+    blocks: 'multihash',
     cars: 'path'
   },
   codecs

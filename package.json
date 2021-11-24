@@ -12,7 +12,7 @@
     "lint": "eslint src",
     "build": "bash scripts/build.sh",
     "deploy": "aws lambda update-function-code --cli-connect-timeout 15000 --region $AWS_REGION --function-name $LAMBDA --zip-file fileb://dist/lambda.zip",
-  "invoke": "aws lambda invoke --cli-binary-format raw-in-base64-out --region $AWS_REGION --function-name $LAMBDA --payload file://event.json --log-type Tail /dev/null | jq -r .LogResult | base64 -d"
+    "invoke": "aws lambda invoke --cli-binary-format raw-in-base64-out --region $AWS_REGION --function-name $LAMBDA --payload file://event.json --log-type Tail /dev/null | jq -r .LogResult | base64 -d"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.41.0",
@@ -27,6 +27,7 @@
     "hwp": "^0.3.0",
     "ipfs-unixfs": "^6.0.6",
     "multiformats": "^9.4.10",
+    "multihashes": "^4.0.3",
     "pino": "^7.2.0"
   },
   "engines": {

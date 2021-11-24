@@ -4,10 +4,10 @@ const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
 
-const { codecs, blocksTable, primaryKeys, carsTable, publishingQueue } = require('./config')
+const { concurrency, codecs, blocksTable, primaryKeys, carsTable, publishingQueue } = require('./config')
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
-const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS } = require('./storage')
+const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
 const { forEach } = require('hwp')
 
 function decodeBlock(block) {
@@ -56,7 +56,7 @@ async function storeNewBlock(car, type, block, data = {}) {
     link.Hash = link.Hash.toString()
   }
 
-  const cid = block.cid.toString()
+  const cid = cidToKey(block.cid)
 
   await writeDynamoItem(true, blocksTable, primaryKeys.blocks, cid, {
     type,
@@ -71,7 +71,7 @@ async function storeNewBlock(car, type, block, data = {}) {
 async function appendCarToBlock(block, cars, carId) {
   cars.push({ car: carId, offset: block.blockOffset, length: block.blockLength })
 
-  return writeDynamoItem(false, blocksTable, primaryKeys.blocks, block.cid.toString(), {
+  return writeDynamoItem(false, blocksTable, primaryKeys.blocks, cidToKey(block.cid), {
     cars: cars.sort((a, b) => {
       return a.offset !== b.offset ? a.offset - b.offset : a.car.localeCompare(b.car)
     })
@@ -88,8 +88,8 @@ async function main(event) {
   for (const record of event.Records) {
     const partialStart = process.hrtime.bigint()
 
-    const car = new URL(`s3://${record.s3.bucket.name}/${record.s3.object.key}`)
-    const carId = car.toString().replace('s3://', '')
+    const carUrl = new URL(`s3://${record.s3.bucket.name}/${record.s3.object.key}`)
+    const carId = carUrl.toString().replace('s3://', '')
 
     currentCar++
 
@@ -97,22 +97,22 @@ async function main(event) {
     const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId)
 
     if (existingCar?.completed) {
-      logger.debug(
+      logger.info(
         { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-        `Skipping CAR ${car} (${currentCar} of ${totalCars}), as it has already been analyzed.`
+        `Skipping CAR ${carUrl} (${currentCar} of ${totalCars}), as it has already been analyzed.`
       )
 
       continue
     }
 
     // Show event progress
-    logger.debug(
+    logger.info(
       { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-      `Analyzing CAR ${currentCar} of ${totalCars}: ${car}`
+      `Analyzing CAR ${currentCar} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
     )
 
     // Load the file from input
-    const indexer = await openS3Stream(car)
+    const indexer = await openS3Stream(carUrl)
 
     // If the CAR is existing and not completed, just move the stream to the last analyzed block
     if (existingCar) {
@@ -132,50 +132,54 @@ async function main(event) {
     }
 
     // For each block in the indexer (which holds the start and end block)
-    await forEach(indexer, async function (block) {
-      // Show CAR progress
-      logger.debug(
-        {
-          elapsed: elapsed(start),
-          progress: {
-            records: { current: currentCar, total: totalCars },
-            car: { position: indexer.position, length: indexer.length }
-          }
-        },
-        `Analyzing CID ${block.cid}`
-      )
+    await forEach(
+      indexer,
+      async function (block) {
+        // Show CAR progress
+        logger.debug(
+          {
+            elapsed: elapsed(start),
+            progress: {
+              records: { current: currentCar, total: totalCars },
+              car: { position: indexer.position, length: indexer.length }
+            }
+          },
+          `Analyzing CID ${block.cid}`
+        )
 
-      // If the block is already in the storage, fetch it and then just update CAR informations
-      const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, block.cid.toString())
-      if (existingBlock) {
-        /*
+        // If the block is already in the storage, fetch it and then just update CAR informations
+        const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+        if (existingBlock) {
+          /*
           If the block has only one CAR and it is the current car, 
           it means the same file is somehow analyzed again.
           Delete the old information in order to have a clean state.
         */
-        const allCars = new Set(existingBlock.cars.map(c => c.car))
+          const allCars = new Set(existingBlock.cars.map(c => c.car))
 
-        if (allCars.size === 1 && allCars.has(carId)) {
-          await deleteDynamoItem(blocksTable, primaryKeys.blocks, block.cid.toString())
-          await updateCarStatus(carId, block)
-        } else {
-          await appendCarToBlock(block, existingBlock.cars, carId)
-          await updateCarStatus(carId, block)
-          return
+          if (allCars.size === 1 && allCars.has(carId)) {
+            await deleteDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+            await updateCarStatus(carId, block)
+          } else {
+            await appendCarToBlock(block, existingBlock.cars, carId)
+            await updateCarStatus(carId, block)
+            return
+          }
         }
-      }
 
-      // Store the block according to the contents
-      if (!block.data) {
-        await storeNewBlock(carId, 'raw', block)
-      } else {
-        const { codec, data } = decodeBlock(block)
-        await storeNewBlock(carId, codec, block, data)
-      }
+        // Store the block according to the contents
+        if (!block.data) {
+          await storeNewBlock(carId, 'raw', block)
+        } else {
+          const { codec, data } = decodeBlock(block)
+          await storeNewBlock(carId, codec, block, data)
+        }
 
-      // Update the information about the CAR analysis progress
-      await updateCarStatus(carId, block)
-    })
+        // Update the information about the CAR analysis progress
+        await updateCarStatus(carId, block)
+      },
+      concurrency
+    )
 
     // Mark the CAR as completed
     await writeDynamoItem(false, carsTable, 'path', carId, {
