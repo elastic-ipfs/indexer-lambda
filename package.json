@@ -2,8 +2,8 @@
   "name": "aws-ipfs-indexing-labmda",
   "version": "0.1.0",
   "description": "AWS IPFS Indexing Lambda",
-  "homepage": "https://github.com/web3-storate/aws-ipfs-indexing-lambda",
-  "repository": "github:web3-storate/aws-ipfs-indexing-lambda",
+  "homepage": "https://github.com/web3-storage/aws-ipfs-indexing-lambda",
+  "repository": "github:web3-storage/aws-ipfs-indexing-lambda",
   "author": "Paolo Insogna <paolo.insogna@nearform.com>",
   "license": "(Apache-2.0 AND MIT)",
   "private": true,
@@ -21,7 +21,7 @@
     "@aws-sdk/util-dynamodb": "^3.41.0",
     "@ipld/dag-cbor": "^6.0.13",
     "@ipld/dag-pb": "^2.1.13",
-    "@web3-storage/car": "^3.1.22",
+    "@ipld/car": "^3.2.0",
     "dag-jose": "^1.0.0",
     "dotenv": "^10.0.0",
     "hwp": "^0.3.0",
@@ -29,9 +29,6 @@
     "multiformats": "^9.4.10",
     "multihashes": "^4.0.3",
     "pino": "^7.2.0"
-  },
-  "engines": {
-    "node": ">=14.15.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
@@ -41,5 +38,8 @@
     "eslint-plugin-promise": "^5.1.1",
     "pino-pretty": "^7.2.0",
     "prettier": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=14.15.0"
   }
 }

@@ -1,6 +1,6 @@
 'use strict'
 
-const { readHeader, readBlockHead, asyncIterableReader } = require('@web3-storage/car/decoder')
+const { readHeader, readBlockHead, asyncIterableReader } = require('@ipld/car/decoder')
 
 const RAW_BLOCK_CODEC = 0x55
 
