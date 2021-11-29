@@ -27,7 +27,6 @@
     "hwp": "^0.3.0",
     "ipfs-unixfs": "^6.0.6",
     "multiformats": "^9.4.10",
-    "multihashes": "^4.0.3",
     "pino": "^7.2.0"
   },
   "devDependencies": {

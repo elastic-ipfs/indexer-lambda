@@ -15,7 +15,7 @@ const {
   convertToAttr
 } = require('@aws-sdk/util-dynamodb')
 const { Agent } = require('https')
-const { toHexString } = require('multihashes')
+const { base58btc: base58 } = require('multiformats/bases/base58')
 
 const { logger, serializeError } = require('./logging')
 
@@ -30,7 +30,7 @@ const sqsClient = new SQSClient({
 })
 
 function cidToKey(cid) {
-  return toHexString(cid.multihash.digest)
+  return base58.encode(cid.multihash.bytes)
 }
 
 async function readDynamoItem(table, keyName, keyValue) {
