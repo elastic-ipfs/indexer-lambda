@@ -1,5 +1,6 @@
 'use strict'
 
+const { forEach } = require('hwp')
 const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
@@ -8,7 +9,6 @@ const { concurrency, codecs, blocksTable, primaryKeys, carsTable, publishingQueu
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
 const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
-const { forEach } = require('hwp')
 
 function decodeBlock(block) {
   const codec = codecs[block.cid.code]
@@ -27,7 +27,7 @@ function decodeBlock(block) {
     data.Data = { type, blocks }
   }
 
-  return { codec: codec.label, data }
+  return data
 }
 
 async function updateCarStatus(carId, block) {
@@ -151,7 +151,7 @@ async function main(event) {
         const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
         if (existingBlock) {
           /*
-          If the block has only one CAR and it is the current car, 
+          If the block has only one CAR and it is the current car,
           it means the same file is somehow analyzed again.
           Delete the old information in order to have a clean state.
         */
@@ -167,13 +167,16 @@ async function main(event) {
           }
         }
 
-        // Store the block according to the contents
-        if (!block.data) {
-          await storeNewBlock(carId, 'raw', block)
-        } else {
-          const { codec, data } = decodeBlock(block)
-          await storeNewBlock(carId, codec, block, data)
-        }
+        /*
+          Note that when DECODE_BLOCKS env variable is unset
+          block.data is always undefined and therefore no decoding is performed.
+        */
+        await storeNewBlock(
+          carId,
+          codecs[block.cid.code]?.label ?? 'unsupported',
+          block,
+          block.data ? decodeBlock(block) : undefined
+        )
 
         // Update the information about the CAR analysis progress
         await updateCarStatus(carId, block)

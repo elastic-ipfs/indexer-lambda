@@ -1,8 +1,7 @@
 'use strict'
 
 const { readHeader, readBlockHead, asyncIterableReader } = require('@ipld/car/decoder')
-
-const RAW_BLOCK_CODEC = 0x55
+const { RAW_BLOCK_CODEC, decodeBlocks } = require('./config')
 
 class CarIterator {
   constructor(version, roots, reader, length) {
@@ -20,7 +19,7 @@ class CarIterator {
       const offset = (this.position = this.reader.pos)
       const { cid, length, blockLength } = await readBlockHead(this.reader)
       this.currentCid = cid
-      const data = cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
+      const data = decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
 
       yield {
         cid,
