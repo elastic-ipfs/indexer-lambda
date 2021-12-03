@@ -5,7 +5,15 @@ const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
 
-const { concurrency, codecs, blocksTable, primaryKeys, carsTable, publishingQueue } = require('./config')
+const {
+  blocksTable,
+  carsTable,
+  concurrency,
+  codecs,
+  primaryKeys,
+  publishingQueue,
+  skipPublishing
+} = require('./config')
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
 const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
@@ -64,6 +72,10 @@ async function storeNewBlock(car, type, block, data = {}) {
     cars: [{ car, offset: block.blockOffset, length: block.blockLength }],
     data
   })
+
+  if (skipPublishing) {
+    return
+  }
 
   return publishToSQS(publishingQueue, cid)
 }
