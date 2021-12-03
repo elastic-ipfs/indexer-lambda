@@ -33,14 +33,15 @@ const concurrency = parseInt(rawConcurrency)
 
 module.exports = {
   RAW_BLOCK_CODEC,
-  concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 16,
   blocksTable: blocksTable ?? 'blocks',
   carsTable: carsTable ?? 'cars',
+  codecs,
+  concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 16,
   decodeBlocks: process.env.DECODE_BLOCKS === 'true',
-  publishingQueue: publishingQueue ?? 'publishingQueue',
   primaryKeys: {
     blocks: 'multihash',
     cars: 'path'
   },
-  codecs
+  publishingQueue: publishingQueue ?? 'publishingQueue',
+  skipPublishing: process.env.SKIP_PUBLISHING === 'true'
 }
