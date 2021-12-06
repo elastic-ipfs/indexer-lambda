@@ -6,7 +6,7 @@ const {
   CONCURRENCY: rawConcurrency,
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
-  SQS_PUBLISHING_QUEUE: publishingQueue
+  SQS_PUBLISHING_QUEUE_URL: publishingQueue
 } = process.env
 
 // Load all supported codecs
