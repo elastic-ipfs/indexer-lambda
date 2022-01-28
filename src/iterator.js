@@ -9,7 +9,7 @@ class CarIterator {
     this.roots = roots
     this.reader = reader
     this.position = reader.pos
-    this.length = length ?? reader.length
+    this.length = length
   }
 
   // eslint-disable-next-line generator-star-spacing

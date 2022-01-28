@@ -2,13 +2,22 @@
 
 const pino = require('pino')
 let destination
+let level = 'info'
 
 try {
   if (process.env.NODE_ENV !== 'production') {
     destination = require('pino-pretty')()
   }
+  /* c8 ignore next 3 */
 } catch (e) {
   // No-op
+}
+
+if (process.env.LOG_LEVEL) {
+  level = process.env.LOG_LEVEL
+  /* c8 ignore next */
+} else if ((process.env.NODE_DEBUG ?? '').includes('aws-ipfs')) {
+  level = 'debug'
 }
 
 const durationUnits = {
@@ -18,7 +27,7 @@ const durationUnits = {
 
 const logger = pino(
   {
-    level: (process.env.NODE_DEBUG ?? '').includes('aws-ipfs') ? 'debug' : 'info',
+    level,
     base: undefined,
     timestamp: pino.stdTimeFunctions.isoTime
   },

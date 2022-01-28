@@ -6,13 +6,15 @@ const {
 } = require('ipfs-unixfs')
 
 const {
+  now,
   blocksTable,
   carsTable,
   concurrency,
   codecs,
   primaryKeys,
   publishingQueue,
-  skipPublishing
+  skipPublishing,
+  skipDurations
 } = require('./config')
 const { logger, elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
@@ -68,7 +70,8 @@ async function storeNewBlock(car, type, block, data = {}) {
 
   await writeDynamoItem(true, blocksTable, primaryKeys.blocks, cid, {
     type,
-    createdAt: new Date().toISOString(),
+    /* c8 ignore next */
+    createdAt: now || new Date().toISOString(),
     cars: [{ car, offset: block.blockOffset, length: block.blockLength }],
     data
   })
@@ -134,8 +137,9 @@ async function main(event) {
       await writeDynamoItem(true, carsTable, primaryKeys.cars, carId, {
         bucket: record.s3.bucket.name,
         key: record.s3.object.key,
-        createdAt: new Date().toISOString(),
-        roots: new Set(indexer.roots.map(r => r.toString())),
+        /* c8 ignore next */
+        createdAt: now || new Date().toISOString(),
+        roots: Array.from(new Set(indexer.roots.map(r => r.toString()))),
         version: indexer.version,
         fileSize: indexer.length,
         currentPosition: indexer.reader.pos,
@@ -162,16 +166,15 @@ async function main(event) {
         // If the block is already in the storage, fetch it and then just update CAR informations
         const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
         if (existingBlock) {
-          /*
-          If the block has only one CAR and it is the current car,
-          it means the same file is somehow analyzed again.
-          Delete the old information in order to have a clean state.
-        */
           const allCars = new Set(existingBlock.cars.map(c => c.car))
 
+          /*
+            If the block has only one CAR and it is the current car,
+            it means the same file is somehow analyzed again.
+            Delete the old information in order to have a clean state.
+          */
           if (allCars.size === 1 && allCars.has(carId)) {
             await deleteDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
-            await updateCarStatus(carId, block)
           } else {
             await appendCarToBlock(block, existingBlock.cars, carId)
             await updateCarStatus(carId, block)
@@ -200,7 +203,7 @@ async function main(event) {
     await writeDynamoItem(false, carsTable, 'path', carId, {
       currentPosition: indexer.length,
       completed: true,
-      durationTime: elapsed(partialStart)
+      durationTime: skipDurations ? 0 : elapsed(partialStart)
     })
   }
 }
