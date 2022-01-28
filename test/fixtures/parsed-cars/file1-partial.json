@@ -1,0 +1,36 @@
+{
+  "path": {
+    "S": "cars/file1.car"
+  },
+  "completed": {
+    "BOOL": false
+  },
+  "version": {
+    "N": "1"
+  },
+  "fileSize": {
+    "N": "405"
+  },
+  "durationTime": {
+    "S": "6669.375"
+  },
+  "currentPosition": {
+    "N": "276"
+  },
+  "createdAt": {
+    "S": "2022-01-27T14:29:26.354Z"
+  },
+  "bucket": {
+    "S": "cars"
+  },
+  "key": {
+    "S": "file1.car"
+  },
+  "roots": {
+    "L": [
+      {
+        "S": "bafybeib2u4mc4vsgpxp7fktmhpg5ncdviinwpfigagndcek43tde7uak2i"
+      }
+    ]
+  }
+}

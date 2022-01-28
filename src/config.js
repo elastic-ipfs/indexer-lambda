@@ -1,6 +1,9 @@
 'use strict'
 
-require('dotenv').config()
+const { resolve } = require('path')
+
+/* c8 ignore next */
+require('dotenv').config({ path: process.env.ENV_FILE_PATH || resolve(process.cwd(), '.env') })
 
 const {
   CONCURRENCY: rawConcurrency,
@@ -26,7 +29,7 @@ const codecs = Object.entries(supportedCodes).reduce(
     accu[code] = { decode, label }
     return accu
   },
-  { [RAW_BLOCK_CODEC]: { label: 'raw', decode: d => d } }
+  { [RAW_BLOCK_CODEC]: { label: 'raw' } }
 )
 
 const concurrency = parseInt(rawConcurrency)
@@ -38,10 +41,12 @@ module.exports = {
   codecs,
   concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 16,
   decodeBlocks: process.env.DECODE_BLOCKS === 'true',
+  now: process.env.NOW,
   primaryKeys: {
     blocks: 'multihash',
     cars: 'path'
   },
   publishingQueue: publishingQueue ?? 'publishingQueue',
-  skipPublishing: process.env.SKIP_PUBLISHING === 'true'
+  skipPublishing: process.env.SKIP_PUBLISHING === 'true',
+  skipDurations: process.env.SKIP_DURATIONS === 'true'
 }

@@ -1,5 +1,6 @@
 'use strict'
 
+/* c8 ignore next 6 */
 const { handler } = require('./index')
 const { resolve } = require('path')
 const { readFileSync } = require('fs')
