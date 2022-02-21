@@ -60,6 +60,8 @@ COPY --from=base /opt /opt
 COPY --from=base /usr/local /usr/local
 # Copy the app
 COPY --from=base /app /app
+# Regenerate GLIBC cache
+RUN /usr/glibc-compat/sbin/ldconfig
 
 # Setup the command
 CMD ["/usr/local/bin/aws-lambda-ric", "index.handler"]
