@@ -18,6 +18,7 @@ const { Agent } = require('https')
 const { base58btc: base58 } = require('multiformats/bases/base58')
 
 const { logger, serializeError } = require('./logging')
+const { metrics, trackDuration } = require('./telemetry')
 
 const agent = new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
 
@@ -35,8 +36,11 @@ function cidToKey(cid) {
 
 async function readDynamoItem(table, keyName, keyValue) {
   try {
-    const record = await dynamoClient.send(
-      new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) })
+    metrics.dynamoReads.add(1)
+
+    const record = await trackDuration(
+      metrics.dynamoReadsDurations,
+      dynamoClient.send(new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
 
     if (!record.Item) {
@@ -83,7 +87,12 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
   }
 
   try {
-    await dynamoClient.send(command)
+    metrics[create ? 'dynamoCreates' : 'dynamoUpdates'].add(1)
+
+    await trackDuration(
+      metrics[create ? 'dynamoCreatesDurations' : 'dynamoUpdatesDurations'],
+      dynamoClient.send(command)
+    )
   } catch (e) {
     // Ignore condition failure errors in updates
     if (!create && e.name === 'ConditionalCheckFailedException') {
@@ -101,8 +110,11 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
 
 async function deleteDynamoItem(table, keyName, keyValue) {
   try {
-    return await dynamoClient.send(
-      new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) })
+    metrics.dynamoDeletes.add(1)
+
+    return await trackDuration(
+      metrics.dynamoDeletesDurations,
+      dynamoClient.send(new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
   } catch (e) {
     logger.error(`Cannot delete item from DynamoDB table ${table}: ${serializeError(e)}`)
@@ -112,7 +124,12 @@ async function deleteDynamoItem(table, keyName, keyValue) {
 
 async function publishToSQS(queue, data) {
   try {
-    await sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
+    metrics.sqsPublishes.add(1)
+
+    await trackDuration(
+      metrics.sqsPublishesDurations,
+      sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
+    )
   } catch (e) {
     logger.error(`Cannot publish a block to ${queue}: ${serializeError(e)}`)
 
