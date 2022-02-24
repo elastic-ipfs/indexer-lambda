@@ -4,6 +4,7 @@ const { forEach } = require('hwp')
 const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
+
 const {
   now,
   blocksTable,
