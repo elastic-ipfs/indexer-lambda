@@ -20,6 +20,12 @@ t.test('logging - elapsed times are correctly evaluated', t => {
 t.test('telemetry - correctly implements interfaces', async t => {
   t.plan(5)
 
+  // Reset other metrics
+  telemetry.logger = {
+    info(arg) {}
+  }
+  await telemetry.flush()
+
   telemetry.createMetric('custom', 'Custom', 'count', 'createUpDownCounter')
 
   // Set the logger to check the tracking
