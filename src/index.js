@@ -4,8 +4,6 @@ const { forEach } = require('hwp')
 const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
-const { setTimeout } = require('timers/promises')
-
 const {
   now,
   blocksTable,
@@ -20,7 +18,7 @@ const {
 const { logger, elapsed, serializeError } = require('./logging')
 const { openS3Stream } = require('./source')
 const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
-const { storeMetrics } = require('./telemetry')
+const telemetry = require('./telemetry')
 
 function decodeBlock(block) {
   const codec = codecs[block.cid.code]
@@ -134,7 +132,7 @@ async function main(event) {
       // Start a interval that every second dumps metrics
       metricsInterval = setInterval(() => {
         /* c8 ignore next 1 */
-        logger.error({ metrics: storeMetrics() }, 'Updating indexing metrics ...')
+        telemetry.flush().catch(console.error)
       }, 1000)
 
       // Load the file from input
@@ -218,7 +216,7 @@ async function main(event) {
       })
 
       clearInterval(metricsInterval)
-      logger.error({ metrics: storeMetrics() }, 'Finished indexing a CAR file')
+      await telemetry.flush()
     }
   } catch (e) {
     logger.error(`Cannot index a CAR file: ${serializeError(e)}`)
@@ -227,12 +225,7 @@ async function main(event) {
     /* c8 ignore next */
   } finally {
     clearInterval(metricsInterval)
-
-    // Wait a little more to let all metrics being collected
-    await setTimeout(200)
-
-    // Output metrics
-    logger.info({ metrics: storeMetrics() }, 'Operation has completed.')
+    await telemetry.flush()
   }
 }
 

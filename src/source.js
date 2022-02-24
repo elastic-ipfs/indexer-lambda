@@ -6,7 +6,7 @@ const { Agent } = require('https')
 
 const { CarIterator } = require('./iterator')
 const { logger, serializeError } = require('./logging')
-const { metrics, trackDuration } = require('./telemetry')
+const telemetry = require('./telemetry')
 
 const s3Client = new S3Client({
   requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
@@ -17,13 +17,13 @@ async function openS3Stream(url) {
 
   // Load the file from input
   try {
-    metrics.s3Fetchs.add(1)
+    telemetry.increaseCount('s3-fetchs')
 
     const Bucket = url.hostname
     const Key = url.pathname.slice(1)
 
     // this imports just the getObject operation from S3
-    s3Request = await trackDuration(metrics.s3FetchsDurations, s3Client.send(new GetObjectCommand({ Bucket, Key })))
+    s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
   } catch (e) {
     logger.error(`Cannot open file ${url}: ${serializeError(e)}`)
     throw e

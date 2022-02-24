@@ -18,7 +18,7 @@ const { Agent } = require('https')
 const { base58btc: base58 } = require('multiformats/bases/base58')
 
 const { logger, serializeError } = require('./logging')
-const { metrics, trackDuration } = require('./telemetry')
+const telemetry = require('./telemetry')
 
 const agent = new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
 
@@ -36,10 +36,10 @@ function cidToKey(cid) {
 
 async function readDynamoItem(table, keyName, keyValue) {
   try {
-    metrics.dynamoReads.add(1)
+    telemetry.increaseCount('dynamo-creates')
 
-    const record = await trackDuration(
-      metrics.dynamoReadsDurations,
+    const record = await telemetry.trackDuration(
+      'dynamo-creates',
       dynamoClient.send(new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
 
@@ -87,12 +87,9 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
   }
 
   try {
-    metrics[create ? 'dynamoCreates' : 'dynamoUpdates'].add(1)
+    telemetry.increaseCount(create ? 'dynamo-creates' : 'dynamo-updates')
 
-    await trackDuration(
-      metrics[create ? 'dynamoCreatesDurations' : 'dynamoUpdatesDurations'],
-      dynamoClient.send(command)
-    )
+    await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', dynamoClient.send(command))
   } catch (e) {
     // Ignore condition failure errors in updates
     if (!create && e.name === 'ConditionalCheckFailedException') {
@@ -110,10 +107,10 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
 
 async function deleteDynamoItem(table, keyName, keyValue) {
   try {
-    metrics.dynamoDeletes.add(1)
+    telemetry.increaseCount('dynamo-deletes')
 
-    return await trackDuration(
-      metrics.dynamoDeletesDurations,
+    await telemetry.trackDuration(
+      'dynamo-deletes',
       dynamoClient.send(new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
   } catch (e) {
@@ -124,10 +121,10 @@ async function deleteDynamoItem(table, keyName, keyValue) {
 
 async function publishToSQS(queue, data) {
   try {
-    metrics.sqsPublishes.add(1)
+    telemetry.increaseCount('sqs-publishes')
 
-    await trackDuration(
-      metrics.sqsPublishesDurations,
+    await telemetry.trackDuration(
+      'sqs-publishes',
       sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
     )
   } catch (e) {
