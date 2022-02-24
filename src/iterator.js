@@ -1,6 +1,7 @@
 'use strict'
 
 const { readHeader, readBlockHead, asyncIterableReader } = require('@ipld/car/decoder')
+
 const { RAW_BLOCK_CODEC, decodeBlocks } = require('./config')
 
 class CarIterator {

@@ -5,6 +5,7 @@ const { join } = require('path')
 const { load } = require('js-yaml')
 const { MeterProvider, UngroupedProcessor } = require('@opentelemetry/sdk-metrics-base')
 const { hrTime } = require('@opentelemetry/core')
+
 const { logger } = require('./logging')
 
 class Aggregator {
