@@ -95,8 +95,6 @@ async function appendCarToBlock(block, cars, carId) {
 }
 
 async function main(event) {
-  let metricsInterval
-
   try {
     const start = process.hrtime.bigint()
 
@@ -129,12 +127,6 @@ async function main(event) {
         { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
         `Analyzing CAR ${currentCar} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
       )
-
-      // Start a interval that every second dumps metrics
-      metricsInterval = setInterval(() => {
-        /* c8 ignore next 1 */
-        telemetry.flush().catch(console.error)
-      }, 1000)
 
       // Load the file from input
       const indexer = await openS3Stream(carUrl)
@@ -216,8 +208,7 @@ async function main(event) {
         durationTime: skipDurations ? 0 : elapsed(partialStart)
       })
 
-      clearInterval(metricsInterval)
-      await telemetry.flush()
+      telemetry.flush()
     }
   } catch (e) {
     logger.error(`Cannot index a CAR file: ${serializeError(e)}`)
@@ -225,8 +216,7 @@ async function main(event) {
     throw e
     /* c8 ignore next */
   } finally {
-    clearInterval(metricsInterval)
-    await telemetry.flush()
+    telemetry.flush()
   }
 }
 
