@@ -28,12 +28,13 @@ t.test('telemetry', async t => {
 
   // Prepare metrics
   telemetry.createMetric('custom', 'Custom', 'count')
+  telemetry.createMetric('active', 'Active', 'count')
 
   telemetry.logger = {
     info(arg) {
       t.strictSame(arg, {
         ipfs_provider_component: 'indexer-lambda',
-        metrics: { 'custom-count': 1 }
+        metrics: { 'custom-count': 1, 'active-count': -1 }
       })
     }
   }
@@ -41,6 +42,7 @@ t.test('telemetry', async t => {
   telemetry.increaseCount('custom')
   telemetry.increaseCount('custom')
   telemetry.decreaseCount('custom')
+  telemetry.decreaseCount('active')
   telemetry.flush()
 
   // Set the logger to check the refresh
@@ -48,7 +50,7 @@ t.test('telemetry', async t => {
     info(arg) {
       t.strictSame(arg, {
         ipfs_provider_component: 'indexer-lambda',
-        metrics: {}
+        metrics: { 'active-count': 0 }
       })
     }
   }
