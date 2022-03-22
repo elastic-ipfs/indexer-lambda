@@ -3,7 +3,7 @@
 const { DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand } = require('@aws-sdk/client-dynamodb')
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const { marshall: serializeDynamoItem } = require('@aws-sdk/util-dynamodb')
-const { SQSClient } = require('@aws-sdk/client-sqs')
+const { SendMessageCommand, SQSClient } = require('@aws-sdk/client-sqs')
 const { mockClient } = require('aws-sdk-client-mock')
 const { readFileSync } = require('fs')
 const { resolve } = require('path')
@@ -68,6 +68,16 @@ function trackDynamoUsages(t) {
   })
 }
 
+function trackSQSUsages(t) {
+  t.context.sqs = {
+    publishes: []
+  }
+
+  sqsMock.on(SendMessageCommand).callsFake(params => {
+    t.context.sqs.publishes.push(params)
+  })
+}
+
 module.exports = {
   dynamoMock,
   s3Mock,
@@ -75,6 +85,7 @@ module.exports = {
   mockDynamoGetItemCommand,
   mockS3GetObject,
   trackDynamoUsages,
+  trackSQSUsages,
   readMockData,
   readMockJSON
 }

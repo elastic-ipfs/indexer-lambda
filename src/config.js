@@ -9,6 +9,7 @@ const {
   CONCURRENCY: rawConcurrency,
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
+  SQS_NOTIFICATIONS_QUEUE_URL: notificationsQueue,
   SQS_PUBLISHING_QUEUE_URL: publishingQueue
 } = process.env
 
@@ -41,6 +42,7 @@ module.exports = {
   codecs,
   concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 16,
   decodeBlocks: process.env.DECODE_BLOCKS === 'true',
+  notificationsQueue: notificationsQueue ?? 'notificationsQueue',
   now: process.env.NOW,
   primaryKeys: {
     blocks: 'multihash',
