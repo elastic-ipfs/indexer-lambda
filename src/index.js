@@ -104,8 +104,9 @@ async function main(event) {
 
     for (const record of event.Records) {
       const partialStart = process.hrtime.bigint()
+      const [, bucket, key] = record.body.match(/([^/]+)\/(.+)/)
 
-      const carUrl = new URL(`s3://${record.s3.bucket.name}/${record.s3.object.key}`)
+      const carUrl = new URL(`s3://${bucket}/${key}`)
       const carId = carUrl.toString().replace('s3://', '')
 
       currentCar++
@@ -137,8 +138,8 @@ async function main(event) {
       } else {
         // Store the initial information of the CAR
         await writeDynamoItem(true, carsTable, primaryKeys.cars, carId, {
-          bucket: record.s3.bucket.name,
-          key: record.s3.object.key,
+          bucket,
+          key,
           /* c8 ignore next */
           createdAt: now || new Date().toISOString(),
           roots: Array.from(new Set(indexer.roots.map(r => r.toString()))),
@@ -210,6 +211,9 @@ async function main(event) {
 
       telemetry.flush()
     }
+
+    // Return a empty object to signal we have consumed all the messages
+    return {}
   } catch (e) {
     logger.error(`Cannot index a CAR file: ${serializeError(e)}`)
 

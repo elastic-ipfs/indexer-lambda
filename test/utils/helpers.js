@@ -4,7 +4,7 @@ function generateEvent(...pairs) {
   return {
     Records: pairs.map(({ bucket, key }) => {
       return {
-        s3: { bucket: { name: bucket }, object: { key } }
+        body: `${bucket}/${key}`
       }
     })
   }
