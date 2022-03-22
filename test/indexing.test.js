@@ -6,11 +6,12 @@ const {
   mockDynamoGetItemCommand,
   mockS3GetObject,
   trackDynamoUsages,
+  trackSQSUsages,
   readMockJSON,
   readMockData
 } = require('./utils/mock')
 const { generateEvent } = require('./utils/helpers')
-const { now } = require('../src/config')
+const { now, notificationsQueue, publishingQueue } = require('../src/config')
 const { handler } = require('../src/index')
 
 t.test('indexing - skip already parsed CAR files', async t => {
@@ -28,7 +29,7 @@ t.test('indexing - skip already parsed CAR files', async t => {
 })
 
 t.test('indexing - indexes a new car', async t => {
-  t.plan(7)
+  t.plan(13)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
   mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', undefined)
@@ -39,6 +40,7 @@ t.test('indexing - indexes a new car', async t => {
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn', undefined)
 
   trackDynamoUsages(t)
+  trackSQSUsages(t)
   await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.creates[0], {
@@ -131,6 +133,36 @@ t.test('indexing - indexes a new car', async t => {
         N: '0'
       }
     }
+  })
+
+  t.strictSame(t.context.sqs.publishes[0], {
+    QueueUrl: publishingQueue,
+    MessageBody: 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC'
+  })
+
+  t.strictSame(t.context.sqs.publishes[1], {
+    QueueUrl: publishingQueue,
+    MessageBody: 'zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL'
+  })
+
+  t.strictSame(t.context.sqs.publishes[2], {
+    QueueUrl: publishingQueue,
+    MessageBody: 'zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX'
+  })
+
+  t.strictSame(t.context.sqs.publishes[3], {
+    QueueUrl: publishingQueue,
+    MessageBody: 'zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339'
+  })
+
+  t.strictSame(t.context.sqs.publishes[4], {
+    QueueUrl: publishingQueue,
+    MessageBody: 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+  })
+
+  t.strictSame(t.context.sqs.publishes[5], {
+    QueueUrl: notificationsQueue,
+    MessageBody: 'cars/file1.car'
   })
 })
 

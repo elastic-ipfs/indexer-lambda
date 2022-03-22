@@ -11,6 +11,7 @@ const {
   carsTable,
   concurrency,
   codecs,
+  notificationsQueue,
   primaryKeys,
   publishingQueue,
   skipPublishing,
@@ -202,12 +203,14 @@ async function main(event) {
         concurrency
       )
 
-      // Mark the CAR as completed
+      // Mark the CAR as completed and notify to SQS
       await writeDynamoItem(false, carsTable, 'path', carId, {
         currentPosition: indexer.length,
         completed: true,
         durationTime: skipDurations ? 0 : elapsed(partialStart)
       })
+
+      await publishToSQS(notificationsQueue, record.body)
 
       telemetry.flush()
     }
