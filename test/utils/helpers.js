@@ -2,9 +2,9 @@
 
 function generateEvent(...pairs) {
   return {
-    Records: pairs.map(({ bucket, key }) => {
+    Records: pairs.map(({ bucketRegion, bucket, key }) => {
       return {
-        body: `${bucket}/${key}`
+        body: `${bucketRegion}/${bucket}/${key}`
       }
     })
   }
