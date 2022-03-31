@@ -36,10 +36,10 @@ function cidToKey(cid) {
 
 async function readDynamoItem(table, keyName, keyValue) {
   try {
-    telemetry.increaseCount('dynamo-creates')
+    telemetry.increaseCount('dynamo-reads')
 
     const record = await telemetry.trackDuration(
-      'dynamo-creates',
+      'dynamo-reads',
       dynamoClient.send(new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
 

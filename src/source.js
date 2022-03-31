@@ -9,14 +9,12 @@ const { logger, serializeError } = require('./logging')
 const telemetry = require('./telemetry')
 
 async function openS3Stream(url, bucketRegion) {
-  const s3Client = new S3Client({
-    region: bucketRegion,
-    requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
-  })
   let s3Request
-
-  // Load the file from input
   try {
+    const s3Client = new S3Client({
+      region: bucketRegion,
+      requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
+    })
     telemetry.increaseCount('s3-fetchs')
 
     const Bucket = url.hostname
