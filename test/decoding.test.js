@@ -23,13 +23,14 @@ t.test('indexing - can decode blocks', async t => {
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn', undefined)
 
   trackDynamoUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.creates[0], {
     TableName: 'cars',
     Item: serializeDynamoItem({
       path: 'cars/file1.car',
       bucket: 'cars',
+      bucketRegion: 'us-east-2',
       key: 'file1.car',
       createdAt: now,
       roots: ['bafybeib2u4mc4vsgpxp7fktmhpg5ncdviinwpfigagndcek43tde7uak2i'],

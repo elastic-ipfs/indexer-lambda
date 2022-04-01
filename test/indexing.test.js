@@ -23,7 +23,7 @@ t.test('indexing - skip already parsed CAR files', async t => {
   })
   mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', readMockJSON('parsed-cars/file1-completed.json'))
 
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.pass('CAR has not been analyzed')
 })
@@ -41,13 +41,14 @@ t.test('indexing - indexes a new car', async t => {
 
   trackDynamoUsages(t)
   trackSQSUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.creates[0], {
     TableName: 'cars',
     Item: serializeDynamoItem({
       path: 'cars/file1.car',
       bucket: 'cars',
+      bucketRegion: 'us-east-2',
       key: 'file1.car',
       createdAt: now,
       roots: ['bafybeib2u4mc4vsgpxp7fktmhpg5ncdviinwpfigagndcek43tde7uak2i'],
@@ -162,7 +163,7 @@ t.test('indexing - indexes a new car', async t => {
 
   t.strictSame(t.context.sqs.publishes[5], {
     QueueUrl: notificationsQueue,
-    MessageBody: 'cars/file1.car'
+    MessageBody: 'us-east-2/cars/file1.car'
   })
 })
 
@@ -184,7 +185,7 @@ t.test('indexing - indexes an already started CAR', async t => {
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn', undefined)
 
   trackDynamoUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.creates[0], {
     TableName: 'blocks',
@@ -232,7 +233,7 @@ t.test('indexing - can overwrite existing data', async t => {
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn', undefined)
 
   trackDynamoUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.creates[1], {
     TableName: 'blocks',
@@ -272,7 +273,7 @@ t.test('indexing - can append data to an existing CAR', async t => {
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn', undefined)
 
   trackDynamoUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file1.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
   t.strictSame(t.context.dynamo.updates[0], {
     TableName: 'blocks',
