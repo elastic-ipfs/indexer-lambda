@@ -14,7 +14,7 @@ t.test('openS3Stream - reports S3 errors', async t => {
 
   s3Mock.on(GetObjectCommand).rejects(new Error('FAILED'))
 
-  await t.rejects(() => openS3Stream(new URL('s3://bucket/key')), { message: 'FAILED' })
+  await t.rejects(() => openS3Stream("us-east-1", new URL('s3://bucket/key')), { message: 'FAILED' })
 })
 
 t.test('openS3Stream - reports invalid CARS', async t => {
@@ -22,7 +22,7 @@ t.test('openS3Stream - reports invalid CARS', async t => {
 
   s3Mock.on(GetObjectCommand).resolves({ Body: Readable.from(Buffer.from([0, 1, 2, 3])) })
 
-  await t.rejects(() => openS3Stream(new URL('s3://bucket/key')), { message: 'Invalid CAR header (zero length)' })
+  await t.rejects(() => openS3Stream("us-east-1", new URL('s3://bucket/key')), { message: 'Invalid CAR header (zero length)' })
 })
 
 t.test('readDynamoItem - reports DynamoDB errors', async t => {
