@@ -8,13 +8,18 @@ const { CarIterator } = require('./iterator')
 const { logger, serializeError } = require('./logging')
 const telemetry = require('./telemetry')
 
-async function openS3Stream(url, bucketRegion) {
+const s3Clients = {}
+
+async function openS3Stream(bucketRegion, url) {
   let s3Request
   try {
-    const s3Client = new S3Client({
-      region: bucketRegion,
-      requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
-    })
+    if (!s3Clients[bucketRegion]) {
+      s3Clients[bucketRegion] = new S3Client({
+        region: bucketRegion,
+        requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
+      })
+    }
+    const s3Client = s3Clients[bucketRegion]
     telemetry.increaseCount('s3-fetchs')
 
     const Bucket = url.hostname

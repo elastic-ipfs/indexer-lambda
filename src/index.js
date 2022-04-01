@@ -105,7 +105,7 @@ async function main(event) {
 
     for (const record of event.Records) {
       const partialStart = process.hrtime.bigint()
-      const [, bucketRegion, bucketName, key] = record.body.match(/([^/]+)\/(.+)\/(.+)/)
+      const [, bucketRegion, bucketName, key] = record.body.match(/([^/]+)\/([^/]+)\/(.+)/)
 
       const carUrl = new URL(`s3://${bucketName}/${key}`)
       const carId = carUrl.toString().replace('s3://', '')
@@ -131,7 +131,7 @@ async function main(event) {
       )
 
       // Load the file from input
-      const indexer = await openS3Stream(carUrl, bucketRegion)
+      const indexer = await openS3Stream(bucketRegion, carUrl)
 
       // If the CAR is existing and not completed, just move the stream to the last analyzed block
       if (existingCar) {
