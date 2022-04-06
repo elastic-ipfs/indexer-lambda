@@ -21,7 +21,7 @@ t.test('indexing - skip already parsed CAR files', async t => {
     t.fail('Existing CAR has not been skipped.')
     return Buffer.alloc(0)
   })
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', readMockJSON('parsed-cars/file1-completed.json'))
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', readMockJSON('parsed-cars/file1-completed.json'))
 
   await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
 
@@ -32,7 +32,7 @@ t.test('indexing - indexes a new car', async t => {
   t.plan(13)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX', undefined)
@@ -46,7 +46,7 @@ t.test('indexing - indexes a new car', async t => {
   t.strictSame(t.context.dynamo.creates[0], {
     TableName: 'cars',
     Item: serializeDynamoItem({
-      path: 'cars/file1.car',
+      path: 'us-east-2/cars/file1.car',
       bucket: 'cars',
       bucketRegion: 'us-east-2',
       key: 'file1.car',
@@ -65,7 +65,7 @@ t.test('indexing - indexes a new car', async t => {
       multihash: 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC',
       type: 'raw',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 96, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 96, length: 4 }],
       data: {}
     })
   })
@@ -76,7 +76,7 @@ t.test('indexing - indexes a new car', async t => {
       multihash: 'zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 137, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 137, length: 51 }],
       data: {}
     })
   })
@@ -87,7 +87,7 @@ t.test('indexing - indexes a new car', async t => {
       multihash: 'zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 225, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 225, length: 51 }],
       data: {}
     })
   })
@@ -98,7 +98,7 @@ t.test('indexing - indexes a new car', async t => {
       multihash: 'zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 313, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 313, length: 51 }],
       data: {}
     })
   })
@@ -109,7 +109,7 @@ t.test('indexing - indexes a new car', async t => {
       multihash: 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 401, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 401, length: 4 }],
       data: {}
     })
   })
@@ -118,7 +118,7 @@ t.test('indexing - indexes a new car', async t => {
     TableName: 'cars',
     Key: {
       path: {
-        S: 'cars/file1.car'
+        S: 'us-east-2/cars/file1.car'
       }
     },
     ConditionExpression: undefined,
@@ -171,7 +171,7 @@ t.test('indexing - indexes an already started CAR', async t => {
   t.plan(2)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', readMockJSON('parsed-cars/file1-partial.json'))
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', readMockJSON('parsed-cars/file1-partial.json'))
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC', () =>
     t.fail('Previous CID request')
   )
@@ -193,7 +193,7 @@ t.test('indexing - indexes an already started CAR', async t => {
       multihash: 'zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 313, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 313, length: 51 }],
       data: {}
     })
   })
@@ -204,7 +204,7 @@ t.test('indexing - indexes an already started CAR', async t => {
       multihash: 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 401, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 401, length: 4 }],
       data: {}
     })
   })
@@ -214,7 +214,7 @@ t.test('indexing - can overwrite existing data', async t => {
   t.plan(1)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', undefined)
   mockDynamoGetItemCommand(
     'blocks',
     'multihash',
@@ -223,7 +223,7 @@ t.test('indexing - can overwrite existing data', async t => {
       multihash: 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC',
       type: 'raw',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 96, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 96, length: 4 }],
       data: {}
     })
   )
@@ -241,7 +241,7 @@ t.test('indexing - can overwrite existing data', async t => {
       multihash: 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC',
       type: 'raw',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 96, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 96, length: 4 }],
       data: {}
     })
   })
@@ -251,7 +251,7 @@ t.test('indexing - can append data to an existing CAR', async t => {
   t.plan(1)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', undefined)
   mockDynamoGetItemCommand(
     'blocks',
     'multihash',
@@ -261,8 +261,8 @@ t.test('indexing - can append data to an existing CAR', async t => {
       type: 'raw',
       createdAt: now,
       cars: [
-        { car: 'cars/file2.car', offset: 96, length: 4 },
-        { car: 'cars/file2.car', offset: 196, length: 4 }
+        { car: 'us-east-2/cars/file2.car', offset: 96, length: 4 },
+        { car: 'us-east-2/cars/file2.car', offset: 196, length: 4 }
       ],
       data: {}
     })
@@ -290,7 +290,7 @@ t.test('indexing - can append data to an existing CAR', async t => {
           {
             M: {
               car: {
-                S: 'cars/file1.car'
+                S: 'us-east-2/cars/file1.car'
               },
               offset: {
                 N: '96'
@@ -303,7 +303,7 @@ t.test('indexing - can append data to an existing CAR', async t => {
           {
             M: {
               car: {
-                S: 'cars/file2.car'
+                S: 'us-east-2/cars/file2.car'
               },
               offset: {
                 N: '96'
@@ -316,7 +316,7 @@ t.test('indexing - can append data to an existing CAR', async t => {
           {
             M: {
               car: {
-                S: 'cars/file2.car'
+                S: 'us-east-2/cars/file2.car'
               },
               offset: {
                 N: '196'
@@ -336,11 +336,11 @@ t.test('indexing - should not fail on unsupported blocks', async t => {
   t.plan(1)
 
   mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 59)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file2.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file2.car', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmPH3Su9xAqw4WRbXT6DvwNpmaXYvTKKAY2hBKJsC7j2b4', undefined)
 
   trackDynamoUsages(t)
-  await handler(generateEvent({ bucket: 'cars', key: 'file2.car' }))
+  await handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file2.car' }))
 
   t.strictSame(t.context.dynamo.creates[1], {
     TableName: 'blocks',
@@ -348,7 +348,7 @@ t.test('indexing - should not fail on unsupported blocks', async t => {
       multihash: 'zQmPH3Su9xAqw4WRbXT6DvwNpmaXYvTKKAY2hBKJsC7j2b4',
       type: 'unsupported',
       createdAt: now,
-      cars: [{ car: 'cars/file2.car', offset: 96, length: 8 }],
+      cars: [{ car: 'us-east-2/cars/file2.car', offset: 96, length: 8 }],
       data: {}
     })
   })

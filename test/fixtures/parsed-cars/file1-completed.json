@@ -1,6 +1,6 @@
 {
   "path": {
-    "S": "cars/file1.car"
+    "S": "us-east-2/cars/file1.car"
   },
   "completed": {
     "BOOL": true

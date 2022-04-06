@@ -15,7 +15,7 @@ t.test('indexing - can decode blocks', async t => {
   t.plan(6)
 
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file1.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file1.car', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX', undefined)
@@ -28,7 +28,7 @@ t.test('indexing - can decode blocks', async t => {
   t.strictSame(t.context.dynamo.creates[0], {
     TableName: 'cars',
     Item: serializeDynamoItem({
-      path: 'cars/file1.car',
+      path: 'us-east-2/cars/file1.car',
       bucket: 'cars',
       bucketRegion: 'us-east-2',
       key: 'file1.car',
@@ -47,7 +47,7 @@ t.test('indexing - can decode blocks', async t => {
       multihash: 'zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC',
       type: 'raw',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 96, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 96, length: 4 }],
       data: {}
     })
   })
@@ -58,7 +58,7 @@ t.test('indexing - can decode blocks', async t => {
       multihash: 'zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 137, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 137, length: 51 }],
       data: {
         Data: { type: 'directory' },
         Links: [{ Hash: 'bafkreiepr3vjk3iouugwiqx5vmqtgjxxlo3plbbgrmdzllkff6vilw27tu', Name: '111', Tsize: 4 }]
@@ -72,7 +72,7 @@ t.test('indexing - can decode blocks', async t => {
       multihash: 'zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 225, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 225, length: 51 }],
       data: {
         Data: { type: 'directory' },
         Links: [{ Hash: 'bafybeicpkdkuqpotuk4kq2auc76thx3zo7cfocotlwk4h7l42bdhsi7auq', Name: 'aaa', Tsize: 106 }]
@@ -86,7 +86,7 @@ t.test('indexing - can decode blocks', async t => {
       multihash: 'zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 313, length: 51 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 313, length: 51 }],
       data: {
         Data: { type: 'directory' },
         Links: [{ Hash: 'bafybeib2pby3jnma7ha2gdcyudafcys6rvmdctw6oaukro2ppaqimf2l4m', Name: 'ccc', Tsize: 55 }]
@@ -100,7 +100,7 @@ t.test('indexing - can decode blocks', async t => {
       multihash: 'zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn',
       type: 'dag-pb',
       createdAt: now,
-      cars: [{ car: 'cars/file1.car', offset: 401, length: 4 }],
+      cars: [{ car: 'us-east-2/cars/file1.car', offset: 401, length: 4 }],
       data: {
         Data: { type: 'directory' },
         Links: []
@@ -113,11 +113,11 @@ t.test('indexing - decoding should fail on unsupported blocks', async t => {
   t.plan(1)
 
   mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 59)
-  mockDynamoGetItemCommand('cars', 'path', 'cars/file2.car', undefined)
+  mockDynamoGetItemCommand('cars', 'path', 'us-east-2/cars/file2.car', undefined)
   mockDynamoGetItemCommand('blocks', 'multihash', 'zQmPH3Su9xAqw4WRbXT6DvwNpmaXYvTKKAY2hBKJsC7j2b4', undefined)
 
   trackDynamoUsages(t)
-  await t.rejects(() => handler(generateEvent({ bucket: 'cars', key: 'file2.car' })), {
+  await t.rejects(() => handler(generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file2.car' })), {
     message: 'Unsupported codec 35 in the block at offset 96'
   })
 })
