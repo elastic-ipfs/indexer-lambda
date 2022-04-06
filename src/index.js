@@ -108,7 +108,7 @@ async function main(event) {
       const [, bucketRegion, bucketName, key] = record.body.match(/([^/]+)\/([^/]+)\/(.+)/)
 
       const carUrl = new URL(`s3://${bucketName}/${key}`)
-      const carId = carUrl.toString().replace('s3://', '')
+      const carId = `${bucketRegion}/${carUrl.toString().replace('s3://', '')}`
 
       currentCar++
 
