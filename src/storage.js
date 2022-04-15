@@ -77,9 +77,6 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
       values[`:${key}Condition`] = value
     }
 
-    console.log(condition.length ? `DEBUG: **** Condition length = ${condition.length}. Complete condition = '${condition.join(' AND ')}'` : 'undefined conditions')
-    console.log(update.length ? `DEBUG: **** Update length = ${update.length}. Complete update = 'SET ${update.join(', ')}'` : 'undefined update')
-
     command = new UpdateItemCommand({
       TableName: table,
       Key: { [keyName]: convertToAttr(keyValue) },
@@ -94,6 +91,9 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
 
     await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', dynamoClient.send(command))
   } catch (e) {
+    console.log(condition.length ? `DEBUG: **** Condition length = ${condition.length}. Complete condition = '${condition.join(' AND ')}'` : 'undefined conditions')
+    console.log(update.length ? `DEBUG: **** Update length = ${update.length}. Complete update = 'SET ${update.join(', ')}'` : 'undefined update')
+
     // Ignore condition failure errors in updates
     if (!create && e.name === 'ConditionalCheckFailedException') {
       return
