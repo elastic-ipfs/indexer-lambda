@@ -77,6 +77,9 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
       values[`:${key}Condition`] = value
     }
 
+    console.log(condition.length ? `DEBUG: **** Condition length = ${condition.length}. Complete condition = '${condition.join(' AND ')}'` : 'undefined conditions')
+    console.log(update.length ? `DEBUG: **** Update length = ${update.length}. Complete update = 'SET ${update.join(', ')}'` : 'undefined update')
+
     command = new UpdateItemCommand({
       TableName: table,
       Key: { [keyName]: convertToAttr(keyValue) },
