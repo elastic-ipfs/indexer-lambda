@@ -185,10 +185,10 @@ async function main(event) {
               "Item size to update has exceeded the maximum allowed size" */
               if (allCars.size < 300) {
                 await appendCarToBlock(block, existingBlock.cars, carId)
-                await updateCarStatus(carId, block)
               } else {
                 logger.warn(`Existing block ${cidToKey(block.cid)} already has more then 300 items at CARs attribute list. Current CAR ${carId} won't be appended`)
               }
+              await updateCarStatus(carId, block)
               return
             }
           }
