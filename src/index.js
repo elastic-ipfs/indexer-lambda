@@ -181,7 +181,13 @@ async function main(event) {
             if (allCars.size === 1 && allCars.has(carId)) {
               await deleteDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
             } else {
-              await appendCarToBlock(block, existingBlock.cars, carId)
+              /* This is required for avoiding DynamoDB error:
+              "Item size to update has exceeded the maximum allowed size" */
+              if (allCars.size < 300) {
+                await appendCarToBlock(block, existingBlock.cars, carId)
+              } else {
+                logger.warn(`Existing block ${cidToKey(block.cid)} already has more then 300 items at CARs attribute list. Current CAR ${carId} won't be appended`)
+              }
               await updateCarStatus(carId, block)
               return
             }
