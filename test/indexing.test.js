@@ -14,6 +14,8 @@ const { generateEvent } = require('./utils/helpers')
 const { now, notificationsQueue, publishingQueue } = require('../src/config')
 const { handler } = require('../src/index')
 
+// TODO abstract from aws mocks
+
 t.test('indexing - skip already parsed CAR files', async t => {
   t.plan(1)
 

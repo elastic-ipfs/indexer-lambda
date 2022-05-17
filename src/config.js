@@ -6,6 +6,10 @@ const { resolve } = require('path')
 require('dotenv').config({ path: process.env.ENV_FILE_PATH || resolve(process.cwd(), '.env') })
 
 const {
+  STORAGE_TYPE: storageType,
+  PUBLISHER_TYPE: publisherType,
+  SOURCE_TYPE: sourceType,
+  HTTPS_AGENT_KEEP_ALIVE: httpsAgentKeepAlive,
   CONCURRENCY: rawConcurrency,
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
@@ -37,6 +41,10 @@ const concurrency = parseInt(rawConcurrency)
 
 module.exports = {
   RAW_BLOCK_CODEC,
+  storageType: storageType ?? 'aws-dynamodb',
+  publisherType: publisherType ?? 'aws-sqs',
+  sourceType: sourceType ?? 'aws-s3',
+  httpsAgentKeepAlive: httpsAgentKeepAlive ?? 60000, // ms
   blocksTable: blocksTable ?? 'blocks',
   carsTable: carsTable ?? 'cars',
   codecs,

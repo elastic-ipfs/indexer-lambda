@@ -11,6 +11,8 @@ const { generateEvent } = require('./utils/helpers')
 const { now } = require('../src/config')
 const { handler } = require('../src/index')
 
+// TODO abstract from aws mocks
+
 t.test('indexing - can decode blocks', async t => {
   t.plan(6)
 

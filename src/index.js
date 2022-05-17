@@ -4,8 +4,13 @@ const { forEach } = require('hwp')
 const {
   UnixFS: { unmarshal: decodeUnixFs }
 } = require('ipfs-unixfs')
+const { Agent } = require('https')
 
 const {
+  sourceType,
+  storageType,
+  publisherType,
+  httpsAgentKeepAlive,
   now,
   blocksTable,
   carsTable,
@@ -18,9 +23,16 @@ const {
   skipDurations
 } = require('./config')
 const { logger, elapsed, serializeError } = require('./logging')
-const { openS3Stream } = require('./source')
-const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
 const telemetry = require('./telemetry')
+const { cidToKey } = require('./utils')
+const createSource = require('./source')
+const createStorage = require('./storage')
+const createPublisher = require('./publisher')
+
+const agent = new Agent({ keepAlive: true, keepAliveMsecs: httpsAgentKeepAlive })
+const source = createSource(sourceType, { telemetry, logger, httpsAgentKeepAlive })
+const storage = createStorage(storageType, { agent, telemetry, logger })
+const publisher = createPublisher(publisherType, { agent, telemetry, logger })
 
 function decodeBlock(block) {
   const codec = codecs[block.cid.code]
@@ -49,7 +61,7 @@ async function updateCarStatus(carId, block) {
     The condition is needed if another block, next to this one,
     has been evaluated first. This can happen due to hwp induced parallelism.
   */
-  return writeDynamoItem(
+  return storage.writeItem(
     false,
     carsTable,
     'path',
@@ -70,7 +82,7 @@ async function storeNewBlock(car, type, block, data = {}) {
 
   const cid = cidToKey(block.cid)
 
-  await writeDynamoItem(true, blocksTable, primaryKeys.blocks, cid, {
+  await storage.writeItem(true, blocksTable, primaryKeys.blocks, cid, {
     type,
     /* c8 ignore next */
     createdAt: now || new Date().toISOString(),
@@ -82,13 +94,13 @@ async function storeNewBlock(car, type, block, data = {}) {
     return
   }
 
-  return publishToSQS(publishingQueue, cid)
+  return publisher.send(publishingQueue, cid)
 }
 
 async function appendCarToBlock(block, cars, carId) {
   cars.push({ car: carId, offset: block.blockOffset, length: block.blockLength })
 
-  return writeDynamoItem(false, blocksTable, primaryKeys.blocks, cidToKey(block.cid), {
+  return storage.writeItem(false, blocksTable, primaryKeys.blocks, cidToKey(block.cid), {
     cars: cars.sort((a, b) => {
       return a.offset !== b.offset ? a.offset - b.offset : a.car.localeCompare(b.car)
     })
@@ -113,7 +125,7 @@ async function main(event) {
       currentCar++
 
       // Check if the CAR exists and it has been already analyzed
-      const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId)
+      const existingCar = await storage.readItem(carsTable, primaryKeys.cars, carId)
 
       if (existingCar?.completed) {
         logger.info(
@@ -131,14 +143,14 @@ async function main(event) {
       )
 
       // Load the file from input
-      const indexer = await openS3Stream(bucketRegion, carUrl)
+      const indexer = await source.load(carUrl, bucketRegion)
 
       // If the CAR is existing and not completed, just move the stream to the last analyzed block
       if (existingCar) {
         indexer.reader.seek(existingCar.currentPosition - indexer.reader.pos)
       } else {
         // Store the initial information of the CAR
-        await writeDynamoItem(true, carsTable, primaryKeys.cars, carId, {
+        await storage.writeItem(true, carsTable, primaryKeys.cars, carId, {
           bucket: bucketName,
           bucketRegion: bucketRegion,
           key,
@@ -169,7 +181,7 @@ async function main(event) {
           )
 
           // If the block is already in the storage, fetch it and then just update CAR informations
-          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+          const existingBlock = await storage.readItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
           if (existingBlock) {
             const allCars = new Set(existingBlock.cars.map(c => c.car))
 
@@ -179,7 +191,7 @@ async function main(event) {
             Delete the old information in order to have a clean state.
           */
             if (allCars.size === 1 && allCars.has(carId)) {
-              await deleteDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+              await storage.deleteItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
             } else {
               /* This is required for avoiding DynamoDB error:
               "Item size to update has exceeded the maximum allowed size" */
@@ -211,13 +223,13 @@ async function main(event) {
       )
 
       // Mark the CAR as completed and notify to SQS
-      await writeDynamoItem(false, carsTable, 'path', carId, {
+      await storage.writeItem(false, carsTable, 'path', carId, {
         currentPosition: indexer.length,
         completed: true,
         durationTime: skipDurations ? 0 : elapsed(partialStart)
       })
 
-      await publishToSQS(notificationsQueue, record.body)
+      await publisher.send(notificationsQueue, record.body)
 
       telemetry.flush()
     }

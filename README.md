@@ -12,6 +12,10 @@ _Variables in bold are required._
 | AWS_REGION                  |                    | The AWS region. **This is also required as GitHub repository secret.**         |
 | AWS_SECRET_ACCESS_KEY       |                    | The AWS access key. **This is also required as GitHub repository secret.**     |
 | CONCURRENCY                 | `16`               | The maximum concurrency when indexing CARs.                                    |
+| STORAGE_TYPE                | `aws-dynamodb`     | Storage type, currently supported: `aws-dynamodb`                              |
+| PUBLISHER_TYPE              | `aws-sqs`          | Publisher type, currently supported: `aws-sqs`                                 |
+| STORAGE_TYPE                | `aws-s3`           | Source type, currently supported: `aws-s3`                                     |
+| HTTPS_AGENT_KEEP_ALIVE      | `60000`            | Keep alive for HTTPS Agent, in ms                                              |
 | DECODE_BLOCKS               |                    | Set to `true` to decode non raw block information and store then in DynamoDB   |
 | DYNAMO_BLOCKS_TABLE         | `blocks`           | The DynamoDB table where store CIDs informations to.                           |
 | DYNAMO_CARS_TABLE           | `cars`             | The DynamoDB table where store CAR files informations to.                      |
