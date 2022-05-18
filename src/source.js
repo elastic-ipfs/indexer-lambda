@@ -28,7 +28,7 @@ async function openS3Stream(bucketRegion, url) {
     // this imports just the getObject operation from S3
     s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
   } catch (e) {
-    logger.error(`Cannot open file ${url}: ${serializeError(e)}`)
+    logger.error({ error: serializeError(e) }, `Cannot open file ${url}`)
     throw e
   }
 
@@ -36,7 +36,7 @@ async function openS3Stream(bucketRegion, url) {
   try {
     return await CarIterator.fromReader(s3Request.Body, s3Request.ContentLength)
   } catch (e) {
-    logger.error(`Cannot parse file ${url} as CAR: ${serializeError(e)}`)
+    logger.error({ error: serializeError(e) }, `Cannot parse file ${url} as CAR`)
     throw e
   }
 }

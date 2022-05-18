@@ -49,7 +49,7 @@ async function readDynamoItem(table, keyName, keyValue) {
 
     return deserializeDynamoItem(record.Item)
   } catch (e) {
-    logger.error(`Cannot get item from DynamoDB table ${table}: ${serializeError(e)}`)
+    logger.error({ error: serializeError(e) }, `Cannot get item from DynamoDB table ${table}`)
     throw e
   }
 }
@@ -97,8 +97,8 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
     }
 
     logger.error(
-      { command },
-      `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}: ${serializeError(e)}`
+      { command, error: serializeError(e) },
+      `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}`
     )
 
     throw e
@@ -114,7 +114,7 @@ async function deleteDynamoItem(table, keyName, keyValue) {
       dynamoClient.send(new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
   } catch (e) {
-    logger.error(`Cannot delete item from DynamoDB table ${table}: ${serializeError(e)}`)
+    logger.error({ error: serializeError(e) }, `Cannot delete item from DynamoDB table ${table}`)
     throw e
   }
 }
@@ -128,7 +128,7 @@ async function publishToSQS(queue, data) {
       sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
     )
   } catch (e) {
-    logger.error(`Cannot publish a block to ${queue}: ${serializeError(e)}`)
+    logger.error({ error: serializeError(e) }, `Cannot publish a block to ${queue}`)
 
     throw e
   }
