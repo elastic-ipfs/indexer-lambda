@@ -225,7 +225,7 @@ async function main(event) {
     // Return a empty object to signal we have consumed all the messages
     return {}
   } catch (e) {
-    logger.error({ error: serializeError(e) }, `Cannot index a CAR file`)
+    logger.error({ error: serializeError(e) }, 'Cannot index a CAR file')
 
     throw e
     /* c8 ignore next */
