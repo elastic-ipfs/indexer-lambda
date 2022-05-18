@@ -6,7 +6,7 @@ on:
       lambda:
         description: 'Lambda Name'
         required: true
-        default: 'indexing'
+        default: 'indexer'
 env:
   REGISTRY: ghcr.io
 jobs:
