@@ -40,7 +40,7 @@ function elapsed(startTime, precision = 3, unit = 'milliseconds') {
 }
 
 function serializeError(e) {
-  return `[${e.code || e.constructor.name}] ${e.message}`
+  return `[${e.code || e.constructor.name}] ${e.message}\n${e.stack}`
 }
 
 module.exports = {
