@@ -168,31 +168,6 @@ async function main(event) {
             `Analyzing CID ${block.cid}`
           )
 
-          // If the block is already in the storage, fetch it and then just update CAR informations
-          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
-          if (existingBlock) {
-            const allCars = new Set(existingBlock.cars.map(c => c.car))
-
-            /*
-            If the block has only one CAR and it is the current car,
-            it means the same file is somehow analyzed again.
-            Delete the old information in order to have a clean state.
-          */
-            if (allCars.size === 1 && allCars.has(carId)) {
-              await deleteDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
-            } else {
-              /* This is required for avoiding DynamoDB error:
-              "Item size to update has exceeded the maximum allowed size" */
-              if (allCars.size < 300) {
-                await appendCarToBlock(block, existingBlock.cars, carId)
-              } else {
-                logger.warn(`Existing block ${cidToKey(block.cid)} already has more then 300 items at CARs attribute list. Current CAR ${carId} won't be appended`)
-              }
-              await updateCarStatus(carId, block)
-              return
-            }
-          }
-
           /*
           Note that when DECODE_BLOCKS env variable is unset
           block.data is always undefined and therefore no decoding is performed.
