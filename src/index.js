@@ -19,7 +19,7 @@ const {
 } = require('./config')
 const { logger, elapsed, serializeError } = require('./logging')
 const { openS3Stream } = require('./source')
-const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS, cidToKey } = require('./storage')
+const { readDynamoItem, writeDynamoItem, publishToSQS, cidToKey } = require('./storage')
 const telemetry = require('./telemetry')
 
 function decodeBlock(block) {
@@ -83,16 +83,6 @@ async function storeNewBlock(car, type, block, data = {}) {
   }
 
   return publishToSQS(publishingQueue, cid)
-}
-
-async function appendCarToBlock(block, cars, carId) {
-  cars.push({ car: carId, offset: block.blockOffset, length: block.blockLength })
-
-  return writeDynamoItem(false, blocksTable, primaryKeys.blocks, cidToKey(block.cid), {
-    cars: cars.sort((a, b) => {
-      return a.offset !== b.offset ? a.offset - b.offset : a.car.localeCompare(b.car)
-    })
-  })
 }
 
 async function main(event) {
