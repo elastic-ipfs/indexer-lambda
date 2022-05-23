@@ -168,6 +168,10 @@ async function main(event) {
             `Analyzing CID ${block.cid}`
           )
 
+          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+          if (existingBlock) {
+            return
+          }
           /*
           Note that when DECODE_BLOCKS env variable is unset
           block.data is always undefined and therefore no decoding is performed.
