@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, multienv-wokflows]
   workflow_dispatch:
-jobs:
+jobs: # We need two separate builds as each is going to a different ECR repo
   build-staging:
     permissions:
       packages: write
