@@ -10,6 +10,6 @@ jobs:
   build:
     permissions:
       packages: write
-    uses: ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/.github/workflows/shared-build.yaml@dev
+    uses: ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/.github/workflows/shared-build.yaml@multienv-wokflows
     with:
       docker_image_version_suffix_label: dev
