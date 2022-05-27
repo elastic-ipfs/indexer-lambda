@@ -9,16 +9,16 @@ on:
         required: false
         default: ''
     secrets:
-      AWS_ACCESS_KEY_ID:
+      aws_access_key_id:
         required: true
         description: AWS Credentials
-      AWS_SECRET_ACCESS_KEY:
+      aws_secret_access_key:
         required: true
         description: AWS Credentials
-      AWS_REGION:
+      aws_region:
         required: true
         description: AWS ECR Region
-      AWS_ECR_REPOSITORY:
+      aws_ecr_repository:
         required: true
         description: AWS ECR Repository
     # outputs:
@@ -74,9 +74,9 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-access-key-id: ${{ secrets.aws_access_key_id }}
+        aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+        aws-region: ${{ secrets.aws_region }}
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build And Push Image with suffix label
@@ -89,7 +89,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ inputs.docker_image_version_suffix_label }}
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.AWS_ECR_REPOSITORY }}:${{ inputs.docker_image_version_suffix_label }}
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ inputs.docker_image_version_suffix_label }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
     - name: Build And Push Image
@@ -102,7 +102,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:latest
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.AWS_ECR_REPOSITORY }}
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
     # - name: Set output variables
