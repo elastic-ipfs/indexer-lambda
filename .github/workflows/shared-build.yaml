@@ -9,6 +9,8 @@ on:
         required: false
         default: ''
     secrets:
+      aws_account_id:
+        required: true
       aws_access_key_id:
         required: true
         description: AWS Credentials
@@ -89,7 +91,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ inputs.docker_image_version_suffix_label }}
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ inputs.docker_image_version_suffix_label }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ inputs.docker_image_version_suffix_label }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
     - name: Build And Push Image
@@ -102,7 +104,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:latest
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
     # - name: Set output variables
