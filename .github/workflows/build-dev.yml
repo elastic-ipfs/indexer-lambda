@@ -15,12 +15,15 @@ jobs:
       docker_image_version_suffix_label: dev
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
-      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_role_id: ${{ secrets.AWS_ROLE_ID }}
+      # aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      # aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY_DEV }}
   deploy:
     uses: ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/.github/workflows/shared-deploy.yaml@multienv-wokflows
+    permissions:
+      id-token: write
     needs: build
     with:
       deploy_to_environment: dev
@@ -28,7 +31,8 @@ jobs:
       docker_image_version: ${{ needs.build.outputs.build_date }}-dev
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
-      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_role_id: ${{ secrets.AWS_ROLE_ID }}
+      # aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      # aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY_DEV }}

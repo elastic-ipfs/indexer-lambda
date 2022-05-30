@@ -11,6 +11,9 @@ on:
     secrets:
       aws_account_id:
         required: true
+      aws_role_id:
+        required: true
+        description: Role used for authenticating this run with AWS
       aws_access_key_id:
         required: true
         description: AWS Credentials
@@ -74,9 +77,11 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.aws_access_key_id }}
-        aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+        role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/${{ secrets.aws_role_id }}
+        role-session-name: ${{ secrets.aws_role_id }}
         aws-region: ${{ secrets.aws_region }}
+        # aws-access-key-id: ${{ secrets.aws_access_key_id }}
+        # aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build And Push Image with suffix label
