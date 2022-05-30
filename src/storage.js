@@ -16,6 +16,8 @@ const {
 } = require('@aws-sdk/util-dynamodb')
 const { Agent } = require('https')
 const { base58btc: base58 } = require('multiformats/bases/base58')
+const { dynamoMaxRetries, dynamoRetryDelay } = require('./config')
+const sleep = require('util').promisify(setTimeout)
 
 const { logger, serializeError } = require('./logging')
 const telemetry = require('./telemetry')
@@ -40,7 +42,7 @@ async function readDynamoItem(table, keyName, keyValue) {
 
     const record = await telemetry.trackDuration(
       'dynamo-reads',
-      dynamoClient.send(new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
+      sendCommand(dynamoClient, new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
 
     if (!record.Item) {
@@ -89,18 +91,12 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
   try {
     telemetry.increaseCount(create ? 'dynamo-creates' : 'dynamo-updates')
 
-    await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', dynamoClient.send(command))
+    await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', sendCommand(dynamoClient, command))
   } catch (e) {
-    // Ignore condition failure errors in updates
-    if (!create && e.name === 'ConditionalCheckFailedException') {
-      return
-    }
-
     logger.error(
       { command, error: serializeError(e) },
       `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}`
     )
-
     throw e
   }
 }
@@ -111,7 +107,7 @@ async function deleteDynamoItem(table, keyName, keyValue) {
 
     await telemetry.trackDuration(
       'dynamo-deletes',
-      dynamoClient.send(new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
+      sendCommand(dynamoClient, new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
     )
   } catch (e) {
     logger.error({ error: serializeError(e), item: { [keyName]: keyValue } }, `Cannot delete item from DynamoDB table ${table}`)
@@ -132,6 +128,25 @@ async function publishToSQS(queue, data) {
 
     throw e
   }
+}
+
+async function sendCommand(client, command, retries = dynamoMaxRetries, retryDelay = dynamoRetryDelay) {
+  let attempts = 1
+  do {
+    try {
+      return await client.send(command)
+    } catch (err) {
+      // Ignore condition failure errors in updates
+      if (!(command instanceof PutItemCommand) && err.name === 'ConditionalCheckFailedException') {
+        return
+      }
+      logger.error(`DynamoDB Error, attempt ${attempts} / ${retries}`, { command, error: serializeError(err) })
+    }
+    await sleep(retryDelay)
+  } while (++attempts < retries)
+
+  logger.error(`Cannot send command to DynamoDB after ${attempts} attempts`, { command })
+  throw new Error('Cannot send command to DynamoDB')
 }
 
 module.exports = {

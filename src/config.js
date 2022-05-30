@@ -10,7 +10,10 @@ const {
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
   SQS_NOTIFICATIONS_QUEUE_URL: notificationsQueue,
-  SQS_PUBLISHING_QUEUE_URL: publishingQueue
+  SQS_PUBLISHING_QUEUE_URL: publishingQueue,
+
+  DYNAMO_MAX_RETRIES: dynamoMaxRetries,
+  DYNAMO_RETRY_DELAY: dynamoRetryDelay
 } = process.env
 
 // Load all supported codecs
@@ -50,5 +53,8 @@ module.exports = {
   },
   publishingQueue: publishingQueue ?? 'publishingQueue',
   skipPublishing: process.env.SKIP_PUBLISHING === 'true',
-  skipDurations: process.env.SKIP_DURATIONS === 'true'
+  skipDurations: process.env.SKIP_DURATIONS === 'true',
+
+  dynamoMaxRetries: dynamoMaxRetries ?? 3,
+  dynamoRetryDelay: dynamoRetryDelay ?? 500 // ms
 }

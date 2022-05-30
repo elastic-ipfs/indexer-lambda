@@ -43,6 +43,7 @@
     "eslint-plugin-promise": "^5.1.1",
     "pino-pretty": "^7.2.0",
     "prettier": "^2.4.1",
+    "sinon": "^14.0.0",
     "tap": "^15.1.6"
   },
   "engines": {
