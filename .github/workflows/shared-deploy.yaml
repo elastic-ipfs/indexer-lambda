@@ -23,12 +23,6 @@ on:
       aws_role_id:
         required: true
         description: Role used for authenticating this run with AWS
-      # aws_access_key_id:
-      #   required: true
-      #   description: AWS Credentials
-      # aws_secret_access_key:
-      #   required: true
-      #   description: AWS Credentials
       aws_region:
         required: true
         description: AWS ECR Region
@@ -52,8 +46,6 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/${{ secrets.aws_role_id }}
           role-session-name: ${{ secrets.aws_role_id }}
           aws-region: ${{ secrets.aws_region }}
-          # aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          # aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
       - name: Deploy Lambda
         run: |
           npm run deploy
