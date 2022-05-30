@@ -24,6 +24,7 @@ jobs:
     uses: ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/.github/workflows/shared-deploy.yaml@multienv-wokflows
     permissions:
       id-token: write
+      contents: write
     needs: build
     with:
       deploy_to_environment: dev
