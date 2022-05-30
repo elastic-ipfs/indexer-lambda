@@ -3,11 +3,16 @@ name: 'Shared CD flow'
 on:
   workflow_call:
     inputs:
+      deploy_to_environment:
+        type: string
+        description: Name of GH environment which image be deployed to
+        required: false
+        default: ''
       lambda:
         required: true
         type: string
         description: 'Lambda Name'
-      docker_image_version:
+      docker_image_version: # Já passa como valor aqui o BUILD_DATE + sufix pra não precisar fazer if/else aqui dentro
         required: false
         type: string
         default: latest
@@ -27,10 +32,10 @@ on:
       aws_ecr_repository:
         required: true
         description: AWS ECR Repository
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.deploy_to_environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -40,17 +45,16 @@ jobs:
           node-version: 16.x
       - name: Prepare deployment
         run: |
+          echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
           echo DOCKER_IMAGE_VERSION= ${{ inputs.docker_image_version }} >> $GITHUB_ENV
           echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-          echo PACKAGE_VERSION=$(cat package.json | jq -r '.version') >> $GITHUB_ENV
-          echo BUILD_DATE=$(date +%Y%m%d.%H%M) >> $GITHUB_ENV
-          echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
+      - name: Prepare image version
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.aws_region }}
       - name: Deploy Lambda
         run: |
           npm run deploy

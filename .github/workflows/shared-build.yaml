@@ -23,16 +23,13 @@ on:
       aws_ecr_repository:
         required: true
         description: AWS ECR Repository
-    # outputs:
-    #   image_repository: 
-    #     description: image_repository
-    #     value: ${{ jobs.build.outputs.image_repository }}
-    #   package_version: 
-    #     description: package_version
-    #     value: ${{ jobs.build.outputs.package_version }}
-    #   build_date: 
-    #     description: build_date
-    #     value: ${{ jobs.build.outputs.build_date }}
+    outputs:
+      package_version: 
+        description: package_version
+        value: ${{ jobs.build.outputs.package_version }}
+      build_date: 
+        description: build_date
+        value: ${{ jobs.build.outputs.build_date }}
 env:
   REGISTRY: ghcr.io
 jobs:
@@ -62,6 +59,7 @@ jobs:
         echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
         echo PACKAGE_VERSION=$(cat package.json | jq -r '.version') >> $GITHUB_ENV
         echo BUILD_DATE=$(date +%Y%m%d.%H%M) >> $GITHUB_ENV
+        echo ECR_FULL_TAG=
         npm install
     - name: Lint code
       run: npm run lint
@@ -91,6 +89,8 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ inputs.docker_image_version_suffix_label }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ env.PACKAGE_VERSION }}-${{ inputs.docker_image_version_suffix_label }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ env.BUILD_DATE }}-${{ inputs.docker_image_version_suffix_label }}
           ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ inputs.docker_image_version_suffix_label }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -104,13 +104,14 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.PACKAGE_VERSION }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:${{ env.BUILD_DATE }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/lambda:latest
-          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ env.PACKAGE_VERSION }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:${{ env.BUILD_DATE }}
+          ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}:latest
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
     - name: Set output variables
       id: setOutput
       run: |
-        echo "::set-output name=image_repository::${{ env.IMAGE_REPOSITORY }}"
         echo "::set-output name=package_version::${{ env.PACKAGE_VERSION }}"
         echo "::set-output name=build_date::${{ env.BUILD_DATE }}"
   
