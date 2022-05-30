@@ -14,12 +14,12 @@ on:
       aws_role_id:
         required: true
         description: Role used for authenticating this run with AWS
-      aws_access_key_id:
-        required: true
-        description: AWS Credentials
-      aws_secret_access_key:
-        required: true
-        description: AWS Credentials
+      # aws_access_key_id:
+      #   required: true
+      #   description: AWS Credentials
+      # aws_secret_access_key:
+      #   required: true
+      #   description: AWS Credentials
       aws_region:
         required: true
         description: AWS ECR Region
