@@ -107,10 +107,10 @@ jobs:
           ${{ secrets.aws_account_id }}.dkr.ecr.${{ secrets.aws_region }}.amazonaws.com/${{ secrets.aws_ecr_repository }}
         labels: |
           org.opencontainers.image.source=https://github.com/${{ github.repository }}
-    # - name: Set output variables
-    #   id: setOutput
-    #   run: |
-    #     echo "::set-output name=image_repository::${{ env.IMAGE_REPOSITORY }}"
-    #     echo "::set-output name=package_version::${{ env.PACKAGE_VERSION }}"
-    #     echo "::set-output name=build_date::${{ env.BUILD_DATE }}"
+    - name: Set output variables
+      id: setOutput
+      run: |
+        echo "::set-output name=image_repository::${{ env.IMAGE_REPOSITORY }}"
+        echo "::set-output name=package_version::${{ env.PACKAGE_VERSION }}"
+        echo "::set-output name=build_date::${{ env.BUILD_DATE }}"
   

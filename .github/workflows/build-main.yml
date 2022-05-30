@@ -1,9 +1,11 @@
 ---
-name: Build
+name: Build And Deploy
 on:
   push:
     branches: [main, multienv-wokflows]
   workflow_dispatch:
+env:
+  REGISTRY: ghcr.io
 jobs: # We need two separate builds as each is going to a different ECR repo
   build-staging:
     permissions:

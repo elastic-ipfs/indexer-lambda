@@ -4,6 +4,8 @@ on:
   push:
     branches: [dev, multienv-wokflows]
   workflow_dispatch:
+env:
+  REGISTRY: ghcr.io
 jobs:
   build:
     permissions:
