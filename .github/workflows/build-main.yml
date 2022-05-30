@@ -2,7 +2,7 @@
 name: Build And Deploy
 on:
   push:
-    branches: [main, multienv-wokflows]
+    branches: [main] # TODO: Just main after integrating with deploy flow
   workflow_dispatch:
 env:
   REGISTRY: ghcr.io

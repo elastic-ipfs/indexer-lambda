@@ -37,29 +37,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.deploy_to_environment }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Use Node.js Current
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16.x
-      - name: Prepare deployment
-        run: |
-          echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
-          echo DOCKER_IMAGE_VERSION= ${{ inputs.docker_image_version }} >> $GITHUB_ENV
-          echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-      - name: Prepare image version
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
-          aws-region: ${{ secrets.aws_region }}
-      - name: Deploy Lambda
-        run: |
-          npm run deploy
-        env:
-          LAMBDA: ${{ inputs.lambda }}
-          AWS_REGION: ${{ secrets.aws_region }}
-          AWS_ACCOUNT_ID: ${{ secrets.aws_account_id }}
-          AWS_ECR_REPOSITORY: ${{ secrets.aws_ecr_repository }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js Current
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+    - name: Prepare deployment
+      run: |
+        echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
+        echo DOCKER_IMAGE_VERSION= ${{ inputs.docker_image_version }} >> $GITHUB_ENV
+        echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.aws_access_key_id }}
+        aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+        aws-region: ${{ secrets.aws_region }}
+    - name: Deploy Lambda
+      run: |
+        npm run deploy
+      env:
+        LAMBDA: ${{ inputs.lambda }}
+        AWS_REGION: ${{ secrets.aws_region }}
+        AWS_ACCOUNT_ID: ${{ secrets.aws_account_id }}
+        AWS_ECR_REPOSITORY: ${{ secrets.aws_ecr_repository }}
