@@ -12,7 +12,7 @@ on:
         required: true
         type: string
         description: 'Lambda Name'
-      docker_image_version: # Já passa como valor aqui o BUILD_DATE + sufix pra não precisar fazer if/else aqui dentro
+      docker_image_version:
         required: false
         type: string
         default: latest
@@ -43,14 +43,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
-      - name: Prepare deployment
-        run: |
-          echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
-          echo ACCOUNT_ID={{ secrets.aws_account_id }} >> $GITHUB_ENV
-          echo AWS_REGION={{ secrets.aws_region }} >> $GITHUB_ENV
-          echo AWS_ECR_REPOSITORY={{ secrets.aws_ecr_repository }} >> $GITHUB_ENV
-          echo DOCKER_IMAGE_VERSION=${{ inputs.docker_image_version }} >> $GITHUB_ENV
-          echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+      # - name: Prepare deployment
+      #   run: |
+      #     echo LAMBDA=${{ inputs.lambda }} >> $GITHUB_ENV
+      #     echo AWS_REGION={{ secrets.aws_region }} >> $GITHUB_ENV
+      #     echo AWS_ECR_REPOSITORY={{ secrets.aws_ecr_repository }} >> $GITHUB_ENV
+      #     echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -65,3 +63,4 @@ jobs:
           AWS_REGION: ${{ secrets.aws_region }}
           AWS_ACCOUNT_ID: ${{ secrets.aws_account_id }}
           AWS_ECR_REPOSITORY: ${{ secrets.aws_ecr_repository }}
+          DOCKER_IMAGE_VERSION: ${{ inputs.docker_image_version }}
