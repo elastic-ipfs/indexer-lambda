@@ -32,10 +32,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      id-token: write
-      contents: write
     outputs:
       image_repository: ${{ steps.setOutput.outputs.image_repository }}
       package_version: ${{ steps.setOutput.outputs.package_version }}
