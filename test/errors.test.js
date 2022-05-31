@@ -1,13 +1,25 @@
 'use strict'
 
+const t = require('tap')
+const sinon = require('sinon')
+const { Readable } = require('stream')
 const { GetItemCommand, PutItemCommand, UpdateItemCommand, DeleteItemCommand } = require('@aws-sdk/client-dynamodb')
 const { GetObjectCommand } = require('@aws-sdk/client-s3')
-const { Readable } = require('stream')
-const t = require('tap')
+const { SendMessageCommand } = require('@aws-sdk/client-sqs')
 const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS } = require('../src/storage')
 const { openS3Stream } = require('../src/source')
+const { logger } = require('../src/logging')
 const { s3Mock, dynamoMock, sqsMock } = require('./utils/mock')
-const { SendMessageCommand } = require('@aws-sdk/client-sqs')
+
+const sandbox = sinon.createSandbox()
+
+t.beforeEach(() => {
+  sandbox.spy(logger)
+})
+
+t.afterEach(() => {
+  sandbox.restore()
+})
 
 t.test('openS3Stream - reports S3 errors', async t => {
   t.plan(1)
@@ -26,45 +38,44 @@ t.test('openS3Stream - reports invalid CARS', async t => {
 })
 
 t.test('readDynamoItem - reports DynamoDB errors', async t => {
-  t.plan(1)
-
   dynamoMock.on(GetItemCommand).rejects(new Error('FAILED'))
 
-  await t.rejects(() => readDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'FAILED' })
+  await t.rejects(() => readDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'Cannot send command to DynamoDB' })
+  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
+  t.equal(logger.error.getCalls().length, 4)
 })
 
 t.test('writeDynamoItem - reports DynamoDB errors', async t => {
-  t.plan(1)
-
   dynamoMock.on(PutItemCommand).rejects(new Error('FAILED'))
 
-  await t.rejects(() => writeDynamoItem(true, 'TABLE', 'KEY', 'VALUE', {}), { message: 'FAILED' })
+  await t.rejects(() => writeDynamoItem(true, 'TABLE', 'KEY', 'VALUE', {}), { message: 'Cannot send command to DynamoDB' })
+  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
+  t.equal(logger.error.getCalls().length, 4)
 })
 
 t.test('writeDynamoItem - reports DynamoDB errors', async t => {
-  t.plan(1)
-
   dynamoMock.on(UpdateItemCommand).rejects(new Error('FAILED'))
 
-  await t.rejects(() => writeDynamoItem(false, 'TABLE', 'KEY', 'VALUE', {}), { message: 'FAILED' })
+  await t.rejects(() => writeDynamoItem(false, 'TABLE', 'KEY', 'VALUE', {}), { message: 'Cannot send command to DynamoDB' })
+  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
+  t.equal(logger.error.getCalls().length, 4)
 })
 
 t.test('writeDynamoItem - ignores DynamoDB precondition failures errors', async t => {
-  t.plan(1)
-
-  const error = new Error('FAILED')
+  const error = new Error('DYNAMO_ERROR')
   error.name = 'ConditionalCheckFailedException'
   dynamoMock.on(UpdateItemCommand).rejects(error)
 
-  await t.resolves(() => writeDynamoItem(false, 'TABLE', 'KEY', 'VALUE', {}), { message: 'FAILED' })
+  await t.resolves(() => writeDynamoItem(false, 'TABLE', 'KEY', 'VALUE', {}), { message: 'DYNAMO_ERROR' })
+  t.equal(logger.error.getCalls().length, 0)
 })
 
 t.test('deleteDynamoItem - reports DynamoDB errors', async t => {
-  t.plan(1)
-
   dynamoMock.on(DeleteItemCommand).rejects(new Error('FAILED'))
 
-  await t.rejects(() => deleteDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'FAILED' })
+  await t.rejects(() => deleteDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'Cannot send command to DynamoDB' })
+  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
+  t.equal(logger.error.getCalls().length, 4)
 })
 
 t.test('publishToSQS - reports SQS errors', async t => {
