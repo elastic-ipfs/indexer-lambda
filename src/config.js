@@ -13,7 +13,10 @@ const {
   SQS_PUBLISHING_QUEUE_URL: publishingQueue,
 
   DYNAMO_MAX_RETRIES: dynamoMaxRetries,
-  DYNAMO_RETRY_DELAY: dynamoRetryDelay
+  DYNAMO_RETRY_DELAY: dynamoRetryDelay,
+
+  S3_MAX_RETRIES: s3MaxRetries,
+  S3_RETRY_DELAY: s3RetryDelay
 } = process.env
 
 // Load all supported codecs
@@ -56,5 +59,8 @@ module.exports = {
   skipDurations: process.env.SKIP_DURATIONS === 'true',
 
   dynamoMaxRetries: dynamoMaxRetries ?? 3,
-  dynamoRetryDelay: dynamoRetryDelay ?? 500 // ms
+  dynamoRetryDelay: dynamoRetryDelay ?? 500, // ms
+
+  s3MaxRetries: s3MaxRetries ?? 3,
+  s3RetryDelay: s3RetryDelay ?? 500 // ms
 }
