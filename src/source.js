@@ -12,7 +12,7 @@ const telemetry = require('./telemetry')
 
 const s3Clients = {}
 
-async function openS3Stream(bucketRegion, url, retries = s3MaxRetries, retryDelay = s3RetryDelay) {
+async function openS3Stream (bucketRegion, url, retries = s3MaxRetries, retryDelay = s3RetryDelay) {
   let s3Request
 
   if (!s3Clients[bucketRegion]) {
@@ -35,7 +35,10 @@ async function openS3Stream(bucketRegion, url, retries = s3MaxRetries, retryDela
       // this imports just the getObject operation from S3
       s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
     } catch (err) {
-      // TODO if not found, throw err
+      if (err.code === 'NoSuchKey') { // not found
+        logger.error({ error: serializeError(err) }, `Cannot open file S3 URL ${url}, does not exists`)
+        throw err
+      }
       logger.warn(`S3 Error, URL: ${url} Error: "${err.message}" attempt ${attempts + 1} / ${retries}`)
       error = err
     }

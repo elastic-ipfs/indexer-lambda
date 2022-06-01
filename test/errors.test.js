@@ -31,6 +31,16 @@ t.test('openS3Stream - reports S3 errors', async t => {
   t.equal(logger.error.getCall(0).lastArg, 'Cannot open file S3 URL s3://bucket/key after 3 attempts')
 })
 
+t.test('openS3Stream - S3 url does not exists', async t => {
+  const err = new Error('FAILED')
+  err.code = 'NoSuchKey'
+  s3Mock.on(GetObjectCommand).rejects(err)
+
+  await t.rejects(() => openS3Stream("us-east-1", new URL('s3://bucket/key'), 3, 10), { message: 'FAILED' })
+  t.equal(logger.warn.getCalls().length, 0)
+  t.equal(logger.error.getCall(0).lastArg, 'Cannot open file S3 URL s3://bucket/key, does not exists')
+})
+
 t.test('openS3Stream - reports invalid CARS', async t => {
   s3Mock.on(GetObjectCommand).resolves({ Body: Readable.from(Buffer.from([0, 1, 2, 3])) })
 
