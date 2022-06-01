@@ -43,9 +43,8 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 16.x
-    - uses: bahmutov/npm-install@v1 # Handles cache dependency cache (https://github.com/bahmutov/npm-install)
     - name: Install dependencies
-      run: npm t
+      uses: bahmutov/npm-install@v1
     - name: Set environment variables
       run: | 
         echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
