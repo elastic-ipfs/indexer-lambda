@@ -142,7 +142,7 @@ async function sendCommand(client, command, retries = dynamoMaxRetries, retryDel
         return
       }
       error = err
-      logger.warn({ command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts+1} / ${retries}`)
+      logger.warn({ command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
     }
     await sleep(retryDelay)
   } while (++attempts < retries)
