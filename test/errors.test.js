@@ -41,24 +41,33 @@ t.test('readDynamoItem - reports DynamoDB errors', async t => {
   dynamoMock.on(GetItemCommand).rejects(new Error('FAILED'))
 
   await t.rejects(() => readDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'Cannot send command to DynamoDB' })
-  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
-  t.equal(logger.error.getCalls().length, 4)
+  t.equal(logger.warn.getCall(0).lastArg, 'DynamoDB Error, attempt 1 / 3')
+  t.equal(logger.warn.getCall(1).lastArg, 'DynamoDB Error, attempt 2 / 3')
+  t.equal(logger.warn.getCall(2).lastArg, 'DynamoDB Error, attempt 3 / 3')
+  t.equal(logger.error.getCall(0).lastArg, 'Cannot send command to DynamoDB after 3 attempts')
+  t.equal(logger.error.getCall(1).lastArg, 'Cannot get item from DynamoDB table TABLE')
 })
 
 t.test('writeDynamoItem - reports DynamoDB errors', async t => {
   dynamoMock.on(PutItemCommand).rejects(new Error('FAILED'))
 
   await t.rejects(() => writeDynamoItem(true, 'TABLE', 'KEY', 'VALUE', {}), { message: 'Cannot send command to DynamoDB' })
-  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
-  t.equal(logger.error.getCalls().length, 4)
+  t.equal(logger.warn.getCall(0).lastArg, 'DynamoDB Error, attempt 1 / 3')
+  t.equal(logger.warn.getCall(1).lastArg, 'DynamoDB Error, attempt 2 / 3')
+  t.equal(logger.warn.getCall(2).lastArg, 'DynamoDB Error, attempt 3 / 3')
+  t.equal(logger.error.getCall(0).lastArg, 'Cannot send command to DynamoDB after 3 attempts')
+  t.equal(logger.error.getCall(1).lastArg, 'Cannot insert item into DynamoDB table TABLE')
 })
 
 t.test('writeDynamoItem - reports DynamoDB errors', async t => {
   dynamoMock.on(UpdateItemCommand).rejects(new Error('FAILED'))
 
   await t.rejects(() => writeDynamoItem(false, 'TABLE', 'KEY', 'VALUE', {}), { message: 'Cannot send command to DynamoDB' })
-  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
-  t.equal(logger.error.getCalls().length, 4)
+  t.equal(logger.warn.getCall(0).lastArg, 'DynamoDB Error, attempt 1 / 3')
+  t.equal(logger.warn.getCall(1).lastArg, 'DynamoDB Error, attempt 2 / 3')
+  t.equal(logger.warn.getCall(2).lastArg, 'DynamoDB Error, attempt 3 / 3')
+  t.equal(logger.error.getCall(0).lastArg, 'Cannot send command to DynamoDB after 3 attempts')
+  t.equal(logger.error.getCall(1).lastArg, 'Cannot update item in DynamoDB table TABLE')
 })
 
 t.test('writeDynamoItem - ignores DynamoDB precondition failures errors', async t => {
@@ -74,8 +83,11 @@ t.test('deleteDynamoItem - reports DynamoDB errors', async t => {
   dynamoMock.on(DeleteItemCommand).rejects(new Error('FAILED'))
 
   await t.rejects(() => deleteDynamoItem('TABLE', 'KEY', 'VALUE'), { message: 'Cannot send command to DynamoDB' })
-  t.ok(logger.error.calledWith('Cannot send command to DynamoDB after 3 attempts'))
-  t.equal(logger.error.getCalls().length, 4)
+  t.equal(logger.warn.getCall(0).lastArg, 'DynamoDB Error, attempt 1 / 3')
+  t.equal(logger.warn.getCall(1).lastArg, 'DynamoDB Error, attempt 2 / 3')
+  t.equal(logger.warn.getCall(2).lastArg, 'DynamoDB Error, attempt 3 / 3')
+  t.equal(logger.error.getCall(0).lastArg, 'Cannot send command to DynamoDB after 3 attempts')
+  t.equal(logger.error.getCall(1).lastArg, 'Cannot delete item from DynamoDB table TABLE')
 })
 
 t.test('publishToSQS - reports SQS errors', async t => {
