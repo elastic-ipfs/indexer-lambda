@@ -131,7 +131,8 @@ async function publishToSQS(queue, data) {
 }
 
 async function sendCommand(client, command, retries = dynamoMaxRetries, retryDelay = dynamoRetryDelay) {
-  let attempts = 1
+  let attempts = 0
+  let error
   do {
     try {
       return await client.send(command)
@@ -140,12 +141,13 @@ async function sendCommand(client, command, retries = dynamoMaxRetries, retryDel
       if (!(command instanceof PutItemCommand) && err.name === 'ConditionalCheckFailedException') {
         return
       }
-      logger.error(`DynamoDB Error, attempt ${attempts} / ${retries}`, { command, error: serializeError(err) })
+      error = err
+      logger.warn({ command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
     }
     await sleep(retryDelay)
   } while (++attempts < retries)
 
-  logger.error(`Cannot send command to DynamoDB after ${attempts} attempts`, { command })
+  logger.error({ command, error: serializeError(error) }, `Cannot send command to DynamoDB after ${attempts} attempts`)
   throw new Error('Cannot send command to DynamoDB')
 }
 
