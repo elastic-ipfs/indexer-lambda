@@ -86,29 +86,31 @@ async function storeNewBlock(car, type, block, data = {}) {
 }
 
 async function main(event) {
+  let currentCarFile
   try {
     const start = process.hrtime.bigint()
-
+    
     // For each Record in the event
-    let currentCar = 0
     const totalCars = event.Records.length
+    let currentCarIndex = 0 
 
     for (const record of event.Records) {
+      currentCarFile = record.body
       const partialStart = process.hrtime.bigint()
-      const [, bucketRegion, bucketName, key] = record.body.match(/([^/]+)\/([^/]+)\/(.+)/)
+      const [, bucketRegion, bucketName, key] = currentCarFile.match(/([^/]+)\/([^/]+)\/(.+)/)
 
       const carUrl = new URL(`s3://${bucketName}/${key}`)
       const carId = `${bucketRegion}/${carUrl.toString().replace('s3://', '')}`
 
-      currentCar++
+      currentCarIndex++
 
       // Check if the CAR exists and it has been already analyzed
       const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId)
 
       if (existingCar?.completed) {
         logger.info(
-          { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-          `Skipping CAR ${carUrl} (${currentCar} of ${totalCars}), as it has already been analyzed.`
+          { elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+          `Skipping CAR ${carUrl} (${currentCarIndex} of ${totalCars}), as it has already been analyzed.`
         )
 
         continue
@@ -116,8 +118,8 @@ async function main(event) {
 
       // Show event progress
       logger.info(
-        { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-        `Analyzing CAR ${currentCar} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
+        { elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+        `Analyzing CAR ${currentCarIndex} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
       )
 
       // Load the file from input
@@ -151,7 +153,7 @@ async function main(event) {
             {
               elapsed: elapsed(start),
               progress: {
-                records: { current: currentCar, total: totalCars },
+                records: { current: currentCarIndex, total: totalCars },
                 car: { position: indexer.position, length: indexer.length }
               }
             },
@@ -186,7 +188,7 @@ async function main(event) {
         durationTime: skipDurations ? 0 : elapsed(partialStart)
       })
 
-      await publishToSQS(notificationsQueue, record.body)
+      await publishToSQS(notificationsQueue, currentCarFile)
 
       telemetry.flush()
     }
@@ -194,7 +196,7 @@ async function main(event) {
     // Return a empty object to signal we have consumed all the messages
     return {}
   } catch (e) {
-    logger.error({ error: serializeError(e) }, 'Cannot index a CAR file')
+    logger.error({ error: serializeError(e), car: currentCarFile }, 'Cannot index the CAR file')
 
     throw e
     /* c8 ignore next */
