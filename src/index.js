@@ -98,7 +98,12 @@ async function main(event) {
     for (const record of event.Records) {
       currentCarFile = record.body
       const partialStart = process.hrtime.bigint()
-      const [, bucketRegion, bucketName, key] = currentCarFile.match(/([^/]+)\/([^/]+)\/(.+)/)
+      const info = currentCarFile.match(/([^/]+)\/([^/]+)\/(.+)/)
+      if (!info) {
+        logger.error({ car: currentCarFile }, 'Invalid car file format')
+        continue
+      }
+      const [, bucketRegion, bucketName, key] = info
 
       const carUrl = new URL(`s3://${bucketName}/${key}`)
       const carId = `${bucketRegion}/${carUrl.toString().replace('s3://', '')}`
