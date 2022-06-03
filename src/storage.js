@@ -36,13 +36,13 @@ function cidToKey(cid) {
   return base58.encode(cid.multihash.bytes)
 }
 
-async function readDynamoItem(table, keyName, keyValue) {
+async function readDynamoItem(table, keyName, keyValue, car) {
   try {
     telemetry.increaseCount('dynamo-reads')
 
     const record = await telemetry.trackDuration(
       'dynamo-reads',
-      sendCommand(dynamoClient, new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
+      sendCommand(dynamoClient, new GetItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }), car)
     )
 
     if (!record.Item) {
@@ -51,12 +51,12 @@ async function readDynamoItem(table, keyName, keyValue) {
 
     return deserializeDynamoItem(record.Item)
   } catch (e) {
-    logger.error({ error: serializeError(e), item: { [keyName]: keyValue } }, `Cannot get item from DynamoDB table ${table}`)
+    logger.error({ car, error: serializeError(e), item: { [keyName]: keyValue } }, `Cannot get item from DynamoDB table ${table}`)
     throw e
   }
 }
 
-async function writeDynamoItem(create, table, keyName, keyValue, data, conditions = {}) {
+async function writeDynamoItem(create, table, keyName, keyValue, data, car, conditions = {}) {
   let command
 
   if (create) {
@@ -91,31 +91,31 @@ async function writeDynamoItem(create, table, keyName, keyValue, data, condition
   try {
     telemetry.increaseCount(create ? 'dynamo-creates' : 'dynamo-updates')
 
-    await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', sendCommand(dynamoClient, command))
+    await telemetry.trackDuration(create ? 'dynamo-creates' : 'dynamo-updates', sendCommand(dynamoClient, command, car))
   } catch (e) {
     logger.error(
-      { command, error: serializeError(e) },
+      { car, command, error: serializeError(e) },
       `Cannot ${create ? 'insert item into' : 'update item in'} DynamoDB table ${table}`
     )
     throw e
   }
 }
 
-async function deleteDynamoItem(table, keyName, keyValue) {
+async function deleteDynamoItem(table, keyName, keyValue, car) {
   try {
     telemetry.increaseCount('dynamo-deletes')
 
     await telemetry.trackDuration(
       'dynamo-deletes',
-      sendCommand(dynamoClient, new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }))
+      sendCommand(dynamoClient, new DeleteItemCommand({ TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }), car)
     )
   } catch (e) {
-    logger.error({ error: serializeError(e), item: { [keyName]: keyValue } }, `Cannot delete item from DynamoDB table ${table}`)
+    logger.error({ car, error: serializeError(e), item: { [keyName]: keyValue } }, `Cannot delete item from DynamoDB table ${table}`)
     throw e
   }
 }
 
-async function publishToSQS(queue, data) {
+async function publishToSQS(queue, data, car) {
   try {
     telemetry.increaseCount('sqs-publishes')
 
@@ -124,13 +124,13 @@ async function publishToSQS(queue, data) {
       sqsClient.send(new SendMessageCommand({ QueueUrl: queue, MessageBody: data }))
     )
   } catch (e) {
-    logger.error({ error: serializeError(e), data }, `Cannot publish a block to ${queue}`)
+    logger.error({ car, error: serializeError(e), data }, `Cannot publish a block to ${queue}`)
 
     throw e
   }
 }
 
-async function sendCommand(client, command, retries = dynamoMaxRetries, retryDelay = dynamoRetryDelay) {
+async function sendCommand(client, command, car, retries = dynamoMaxRetries, retryDelay = dynamoRetryDelay) {
   let attempts = 0
   let error
   do {
@@ -142,12 +142,12 @@ async function sendCommand(client, command, retries = dynamoMaxRetries, retryDel
         return
       }
       error = err
-      logger.warn({ command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
+      logger.debug({ car, command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
     }
     await sleep(retryDelay)
   } while (++attempts < retries)
 
-  logger.error({ command, error: serializeError(error) }, `Cannot send command to DynamoDB after ${attempts} attempts`)
+  logger.error({ car, command, error: serializeError(error) }, `Cannot send command to DynamoDB after ${attempts} attempts`)
   throw new Error('Cannot send command to DynamoDB')
 }
 
