@@ -87,7 +87,7 @@ async function storeNewBlock(carId, type, block, car, data = {}) {
 }
 
 async function main(event) {
-  let currentCarFile
+  let carId
   try {
     const start = process.hrtime.bigint()
 
@@ -96,26 +96,26 @@ async function main(event) {
     let currentCarIndex = 0
 
     for (const record of event.Records) {
-      currentCarFile = record.body
+      carId = record.body
+      // record.body us-east-2/dotstorage-prod-0/raw/bafybeiauotdu37nilctu775syv573xjdkryccphc4v2jpdmd3jydkuygl4/308165660731507275/ciqkvxdx6rxkuybmfmfjptb6srih2xyhott6dnfvgsvwfhzqscter3q.car
+      // record.body abc*
       const partialStart = process.hrtime.bigint()
-      const info = currentCarFile.match(/([^/]+)\/([^/]+)\/(.+)/)
+      const info = carId.match(/([^/]+)\/([^/]+)\/(.+)/)
       if (!info) {
-        logger.error({ car: currentCarFile }, 'Invalid car file format')
+        logger.error({ car: carId }, 'Invalid car file format')
         continue
       }
       const [, bucketRegion, bucketName, key] = info
-
       const carUrl = new URL(`s3://${bucketName}/${key}`)
-      const carId = `${bucketRegion}/${carUrl.toString().replace('s3://', '')}`
 
       currentCarIndex++
 
       // Check if the CAR exists and it has been already analyzed
-      const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId, currentCarFile)
+      const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId, carId)
 
       if (existingCar?.completed) {
         logger.debug(
-          { car: currentCarFile, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+          { car: carId, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
           `Skipping CAR ${carUrl} (${currentCarIndex} of ${totalCars}), as it has already been analyzed.`
         )
 
@@ -124,12 +124,12 @@ async function main(event) {
 
       // Show event progress
       logger.debug(
-        { car: currentCarFile, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+        { car: carId, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
         `Analyzing CAR ${currentCarIndex} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
       )
 
       // Load the file from input
-      const indexer = await openS3Stream(bucketRegion, carUrl, currentCarFile)
+      const indexer = await openS3Stream(bucketRegion, carUrl, carId)
 
       // If the CAR is existing and not completed, just move the stream to the last analyzed block
       if (existingCar) {
@@ -147,7 +147,7 @@ async function main(event) {
           fileSize: indexer.length,
           currentPosition: indexer.reader.pos,
           completed: false
-        }, currentCarFile)
+        }, carId)
       }
 
       // For each block in the indexer (which holds the start and end block)
@@ -157,7 +157,7 @@ async function main(event) {
           // Show CAR progress
           logger.debug(
             {
-              car: currentCarFile,
+              car: carId,
               elapsed: elapsed(start),
               progress: {
                 records: { current: currentCarIndex, total: totalCars },
@@ -167,7 +167,7 @@ async function main(event) {
             `Analyzing CID ${block.cid}`
           )
 
-          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid), currentCarFile)
+          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid), carId)
           if (existingBlock) {
             return
           }
@@ -179,12 +179,12 @@ async function main(event) {
             carId,
             codecs[block.cid.code]?.label ?? 'unsupported',
             block,
-            currentCarFile,
-            block.data ? decodeBlock(block, currentCarFile) : undefined
+            carId,
+            block.data ? decodeBlock(block, carId) : undefined
           )
 
           // Update the information about the CAR analysis progress
-          await updateCarStatus(carId, block, currentCarFile)
+          await updateCarStatus(carId, block, carId)
         },
         concurrency
       )
@@ -194,9 +194,9 @@ async function main(event) {
         currentPosition: indexer.length,
         completed: true,
         durationTime: skipDurations ? 0 : elapsed(partialStart)
-      }, currentCarFile)
+      }, carId)
 
-      await publishToSQS(notificationsQueue, currentCarFile, currentCarFile)
+      await publishToSQS(notificationsQueue, carId, carId)
 
       telemetry.flush()
     }
@@ -204,7 +204,7 @@ async function main(event) {
     // Return a empty object to signal we have consumed all the messages
     return {}
   } catch (e) {
-    logger.error({ car: currentCarFile, error: serializeError(e) }, 'Cannot index the CAR file')
+    logger.error({ car: carId, error: serializeError(e) }, 'Cannot index the CAR file')
 
     throw e
     /* c8 ignore next */
