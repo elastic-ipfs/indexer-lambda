@@ -97,8 +97,6 @@ async function main(event) {
 
     for (const record of event.Records) {
       carId = record.body
-      // record.body us-east-2/dotstorage-prod-0/raw/bafybeiauotdu37nilctu775syv573xjdkryccphc4v2jpdmd3jydkuygl4/308165660731507275/ciqkvxdx6rxkuybmfmfjptb6srih2xyhott6dnfvgsvwfhzqscter3q.car
-      // record.body abc*
       const partialStart = process.hrtime.bigint()
       const info = carId.match(/([^/]+)\/([^/]+)\/(.+)/)
       if (!info) {
