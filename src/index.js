@@ -22,11 +22,11 @@ const { openS3Stream } = require('./source')
 const { readDynamoItem, writeDynamoItem, publishToSQS, cidToKey } = require('./storage')
 const telemetry = require('./telemetry')
 
-function decodeBlock(block) {
+function decodeBlock(block, car) {
   const codec = codecs[block.cid.code]
 
   if (!codec) {
-    logger.error(`Unsupported codec ${block.cid.code} in the block at offset ${block.blockOffset}`)
+    logger.error({ car }, `Unsupported codec ${block.cid.code} in the block at offset ${block.blockOffset}`)
     throw new Error(`Unsupported codec ${block.cid.code} in the block at offset ${block.blockOffset}`)
   }
 
@@ -42,7 +42,7 @@ function decodeBlock(block) {
   return data
 }
 
-async function updateCarStatus(carId, block) {
+async function updateCarStatus(carId, block, car) {
   const currentPosition = block.offset + block.length
 
   /*
@@ -57,13 +57,14 @@ async function updateCarStatus(carId, block) {
     {
       currentPosition
     },
+    car,
     {
       currentPosition: ['<', currentPosition]
     }
   )
 }
 
-async function storeNewBlock(car, type, block, data = {}) {
+async function storeNewBlock(carId, type, block, car, data = {}) {
   for (const link of data?.Links ?? []) {
     link.Hash = link.Hash.toString()
   }
@@ -74,54 +75,59 @@ async function storeNewBlock(car, type, block, data = {}) {
     type,
     /* c8 ignore next */
     createdAt: now || new Date().toISOString(),
-    cars: [{ car, offset: block.blockOffset, length: block.blockLength }],
+    cars: [{ car: carId, offset: block.blockOffset, length: block.blockLength }],
     data
-  })
+  }, car)
 
   if (skipPublishing) {
     return
   }
 
-  return publishToSQS(publishingQueue, cid)
+  return publishToSQS(publishingQueue, cid, carId)
 }
 
 async function main(event) {
+  let carId
   try {
     const start = process.hrtime.bigint()
 
     // For each Record in the event
-    let currentCar = 0
     const totalCars = event.Records.length
+    let currentCarIndex = 0
 
     for (const record of event.Records) {
+      carId = record.body
       const partialStart = process.hrtime.bigint()
-      const [, bucketRegion, bucketName, key] = record.body.match(/([^/]+)\/([^/]+)\/(.+)/)
-
+      const info = carId.match(/([^/]+)\/([^/]+)\/(.+)/)
+      if (!info) {
+        logger.error({ car: carId }, 'Invalid car file format')
+        continue
+      }
+      const [, bucketRegion, bucketName, key] = info
       const carUrl = new URL(`s3://${bucketName}/${key}`)
-      const carId = `${bucketRegion}/${carUrl.toString().replace('s3://', '')}`
 
-      currentCar++
+      currentCarIndex++
 
       // Check if the CAR exists and it has been already analyzed
-      const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId)
+      const existingCar = await readDynamoItem(carsTable, primaryKeys.cars, carId, carId)
 
       if (existingCar?.completed) {
-        logger.info(
-          { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-          `Skipping CAR ${carUrl} (${currentCar} of ${totalCars}), as it has already been analyzed.`
+        logger.debug(
+          { car: carId, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+          `Skipping CAR ${carUrl} (${currentCarIndex} of ${totalCars}), as it has already been analyzed.`
         )
 
         continue
       }
 
       // Show event progress
-      logger.info(
-        { elapsed: elapsed(start), progress: { records: { current: currentCar, total: totalCars } } },
-        `Analyzing CAR ${currentCar} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
+      logger.debug(
+        { car: carId, elapsed: elapsed(start), progress: { records: { current: currentCarIndex, total: totalCars } } },
+        `Analyzing CAR ${currentCarIndex} of ${totalCars} with concurrency ${concurrency}: ${carUrl}`
       )
 
       // Load the file from input
-      const indexer = await openS3Stream(bucketRegion, carUrl)
+      const indexer = await openS3Stream(bucketRegion, carUrl, carId)
 
       // If the CAR is existing and not completed, just move the stream to the last analyzed block
       if (existingCar) {
@@ -139,7 +145,7 @@ async function main(event) {
           fileSize: indexer.length,
           currentPosition: indexer.reader.pos,
           completed: false
-        })
+        }, carId)
       }
 
       // For each block in the indexer (which holds the start and end block)
@@ -149,16 +155,17 @@ async function main(event) {
           // Show CAR progress
           logger.debug(
             {
+              car: carId,
               elapsed: elapsed(start),
               progress: {
-                records: { current: currentCar, total: totalCars },
+                records: { current: currentCarIndex, total: totalCars },
                 car: { position: indexer.position, length: indexer.length }
               }
             },
             `Analyzing CID ${block.cid}`
           )
 
-          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid))
+          const existingBlock = await readDynamoItem(blocksTable, primaryKeys.blocks, cidToKey(block.cid), carId)
           if (existingBlock) {
             return
           }
@@ -170,11 +177,12 @@ async function main(event) {
             carId,
             codecs[block.cid.code]?.label ?? 'unsupported',
             block,
-            block.data ? decodeBlock(block) : undefined
+            carId,
+            block.data ? decodeBlock(block, carId) : undefined
           )
 
           // Update the information about the CAR analysis progress
-          await updateCarStatus(carId, block)
+          await updateCarStatus(carId, block, carId)
         },
         concurrency
       )
@@ -184,9 +192,9 @@ async function main(event) {
         currentPosition: indexer.length,
         completed: true,
         durationTime: skipDurations ? 0 : elapsed(partialStart)
-      })
+      }, carId)
 
-      await publishToSQS(notificationsQueue, record.body)
+      await publishToSQS(notificationsQueue, carId, carId)
 
       telemetry.flush()
     }
@@ -194,7 +202,7 @@ async function main(event) {
     // Return a empty object to signal we have consumed all the messages
     return {}
   } catch (e) {
-    logger.error({ error: serializeError(e) }, 'Cannot index a CAR file')
+    logger.error({ car: carId, error: serializeError(e) }, 'Cannot index the CAR file')
 
     throw e
     /* c8 ignore next */
