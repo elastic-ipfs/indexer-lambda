@@ -8,7 +8,7 @@ jobs:
   build:
     permissions:
       packages: write
-    uses: ipfs-elastic-provider/shared-workflows/lambdas/shared-build.yaml@main
+    uses: ipfs-elastic-provider/shared-workflows/.github/workflows/lambdas/shared-build.yaml@main
     with:
       docker_push: false
     secrets:
