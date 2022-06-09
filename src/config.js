@@ -59,8 +59,8 @@ module.exports = {
   skipDurations: process.env.SKIP_DURATIONS === 'true',
 
   dynamoMaxRetries: dynamoMaxRetries ?? 3,
-  dynamoRetryDelay: dynamoRetryDelay ?? 500, // ms
+  dynamoRetryDelay: dynamoRetryDelay ?? 100, // ms
 
   s3MaxRetries: s3MaxRetries ?? 3,
-  s3RetryDelay: s3RetryDelay ?? 500 // ms
+  s3RetryDelay: s3RetryDelay ?? 100 // ms
 }
