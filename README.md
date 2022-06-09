@@ -16,9 +16,9 @@ _Variables in bold are required._
 | DYNAMO_BLOCKS_TABLE         | `blocks`           | The DynamoDB table where store CIDs informations to.                           |
 | DYNAMO_CARS_TABLE           | `cars`             | The DynamoDB table where store CAR files informations to.                      |
 | DYNAMO_MAX_RETRIES          | 3                  | DynamoDB max attempts in case of query failure.                                |
-| DYNAMO_RETRY_DELAY          | 500                | DynamoDB delay between attempts in case of query failure, in milliseconds.     |
+| DYNAMO_RETRY_DELAY          | 100                | DynamoDB delay between attempts in case of failure, in milliseconds.           |
 | S3_MAX_RETRIES              | 3                  | S3 max attempts in case of failure.                                            |
-| S3_RETRY_DELAY              | 500                | S3 delay between attempts in case of query failure, in milliseconds.           |
+| S3_RETRY_DELAY              | 100                | S3 delay between attempts in case of failure, in milliseconds.                 |
 | ENV_FILE_PATH               | `$PWD/.env`        | The environment file to load.                                                  |
 | NODE_DEBUG                  |                    | If it contains `aws-ipfs`, debug mode is enabled.                              |
 | NODE_ENV                    |                    | Set to `production` to disable pretty logging.                                 |

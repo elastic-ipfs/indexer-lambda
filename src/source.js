@@ -34,6 +34,7 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
     try {
       // this imports just the getObject operation from S3
       s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
+      break
     } catch (err) {
       if (err.code === 'NoSuchKey') { // not found
         logger.error({ car, error: serializeError(err) }, `Cannot open file S3 URL ${url}, does not exists`)

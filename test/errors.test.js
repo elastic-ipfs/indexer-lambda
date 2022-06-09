@@ -9,7 +9,7 @@ const { SendMessageCommand } = require('@aws-sdk/client-sqs')
 const { readDynamoItem, writeDynamoItem, deleteDynamoItem, publishToSQS } = require('../src/storage')
 const { openS3Stream } = require('../src/source')
 const { logger } = require('../src/logging')
-const { s3Mock, dynamoMock, sqsMock } = require('./utils/mock')
+const { s3Mock, dynamoMock, sqsMock, mockS3GetObject, readMockData } = require('./utils/mock')
 
 const sandbox = sinon.createSandbox()
 
@@ -19,6 +19,14 @@ t.beforeEach(() => {
 
 t.afterEach(() => {
   sandbox.restore()
+})
+
+t.test('openS3Stream - succeed', async t => {
+  mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
+
+  await openS3Stream('us-east-1', new URL('s3://cars/file1.car'), 3, 10)
+  t.equal(logger.warn.getCalls().length, 0)
+  t.equal(logger.error.getCalls().length, 0)
 })
 
 t.test('openS3Stream - reports S3 errors', async t => {
