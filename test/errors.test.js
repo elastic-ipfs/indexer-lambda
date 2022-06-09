@@ -24,7 +24,7 @@ t.afterEach(() => {
 t.test('openS3Stream - succeed', async t => {
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
 
-  await openS3Stream("us-east-1", new URL('s3://cars/file1.car'), 3, 10)
+  await openS3Stream('us-east-1', new URL('s3://cars/file1.car'), 3, 10)
   t.equal(logger.warn.getCalls().length, 0)
   t.equal(logger.error.getCalls().length, 0)
 })
