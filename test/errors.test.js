@@ -51,6 +51,8 @@ t.test('openS3Stream - S3 url does not exists', async t => {
   await t.rejects(() => openS3Stream('us-east-1', new URL('s3://bucket/key'), 'car-file', 3, 10), { message: 'FAILED' })
   t.equal(logger.debug.getCalls().length, 0)
   t.equal(logger.error.getCall(0).lastArg, 'Cannot open file S3 URL s3://bucket/key, does not exists')
+  t.equal(logger.error.getCall(1).lastArg, 'Cannot open file S3 URL s3://bucket/key after 0 attempts')
+  t.equal(logger.error.getCalls().length, 2)
 })
 
 t.test('openS3Stream - reports invalid CARS', async t => {

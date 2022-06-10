@@ -39,7 +39,8 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
     } catch (err) {
       if (err.code === 'NoSuchKey') { // not found
         logger.error({ car, error: serializeError(err) }, `Cannot open file S3 URL ${url}, does not exists`)
-        throw err
+        error = err
+        break
       }
       logger.debug({ car }, `S3 Error, URL: ${url} Error: "${err.message}" attempt ${attempts + 1} / ${retries}`)
       error = err
