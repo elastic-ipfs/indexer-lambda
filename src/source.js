@@ -53,7 +53,7 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
   }
 
   const stats = {
-    lastModified: s3Request.LastModified,
+    lastModified: s3Request.LastModified?.getTime(),
     contentLength: s3Request.ContentLength
   }
 

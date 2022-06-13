@@ -23,14 +23,14 @@ t.afterEach(() => {
 
 t.test('openS3Stream - succeed', async t => {
   const length = 148
-  const modified = new Date('2022-06-13T10:04:00.044Z')
+  const modified = new Date('2022-06-13T10:04:00.044Z').getTime()
   mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), length, modified)
 
   const { stats } = await openS3Stream('us-east-1', new URL('s3://cars/file1.car'), 3, 10)
   t.equal(logger.warn.getCalls().length, 0)
   t.equal(logger.error.getCalls().length, 0)
   t.equal(stats.contentLength, length)
-  t.equal(stats.lastModified.getTime(), modified.getTime())
+  t.equal(stats.lastModified, modified)
 })
 
 t.test('openS3Stream - reports S3 errors', async t => {
