@@ -34,7 +34,7 @@ function mockDynamoGetItemCommand(table, keyName, keyValue, response) {
   }
 }
 
-function mockS3GetObject(bucket, key, response, length, index = 0) {
+function mockS3GetObject(bucket, key, response, length, modified = new Date(), index = 0) {
   s3Mock
     .on(GetObjectCommand, {
       Bucket: bucket,
@@ -49,7 +49,7 @@ function mockS3GetObject(bucket, key, response, length, index = 0) {
         response = await response()
       }
 
-      return { Body: response ? Readable.from(response) : undefined, ContentLength: length }
+      return { Body: response ? Readable.from(response) : undefined, ContentLength: length, LastModified: modified }
     })
 }
 

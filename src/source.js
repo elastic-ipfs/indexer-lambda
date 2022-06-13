@@ -13,6 +13,7 @@ const telemetry = require('./telemetry')
 const s3Clients = {}
 
 async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, retryDelay = s3RetryDelay) {
+  /** @type {import('@aws-sdk/client-s3').GetObjectCommandOutput} */
   let s3Request
 
   if (!s3Clients[bucketRegion]) {
@@ -51,9 +52,15 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
     throw error
   }
 
+  const stats = {
+    lastModified: s3Request.LastModified,
+    contentLength: s3Request.ContentLength
+  }
+
   // Start parsing as CAR file
   try {
-    return await CarIterator.fromReader(s3Request.Body, s3Request.ContentLength)
+    const indexer = await CarIterator.fromReader(s3Request.Body, s3Request.ContentLength)
+    return { indexer, stats }
   } catch (e) {
     logger.error({ car, error: serializeError(e) }, `Cannot parse file ${url} as CAR`)
     throw e
