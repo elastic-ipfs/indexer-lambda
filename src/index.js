@@ -127,7 +127,7 @@ async function main(event) {
       )
 
       // Load the file from input
-      const indexer = await openS3Stream(bucketRegion, carUrl, carId)
+      const { indexer, stats } = await openS3Stream(bucketRegion, carUrl, carId)
 
       // If the CAR is existing and not completed, just move the stream to the last analyzed block
       if (existingCar) {
@@ -148,10 +148,13 @@ async function main(event) {
         }, carId)
       }
 
+      let blockCount = 0
       // For each block in the indexer (which holds the start and end block)
       await forEach(
         indexer,
         async function (block) {
+          blockCount++
+
           // Show CAR progress
           logger.debug(
             {
@@ -195,6 +198,14 @@ async function main(event) {
       }, carId)
 
       await publishToSQS(notificationsQueue, carId, carId)
+
+      logger.info({
+        car: carId,
+        ...stats,
+        blocks: blockCount,
+        duration: elapsed(partialStart),
+        resumed: Boolean(existingCar)
+      }, `Indexing complete: ${carId}`)
 
       telemetry.flush()
     }
