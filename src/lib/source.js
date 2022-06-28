@@ -5,21 +5,23 @@ const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const { Agent } = require('https')
 const sleep = require('util').promisify(setTimeout)
 
-const { s3MaxRetries, s3RetryDelay } = require('./config')
+const config = require('../config')
 const { CarIterator } = require('./iterator')
-const { logger, serializeError } = require('./logging')
+const { serializeError } = require('./logging')
 const telemetry = require('./telemetry')
 
 const s3Clients = {}
 
-async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, retryDelay = s3RetryDelay) {
+async function openS3Stream({ bucketRegion, url, logger, retries = config.s3MaxRetries, retryDelay = config.s3RetryDelay, decodeBlocks }) {
   /** @type {import('@aws-sdk/client-s3').GetObjectCommandOutput} */
   let s3Request
 
   if (!s3Clients[bucketRegion]) {
     s3Clients[bucketRegion] = new S3Client({
       region: bucketRegion,
-      requestHandler: new NodeHttpHandler({ httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 }) })
+      requestHandler: new NodeHttpHandler({
+        httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
+      })
     })
   }
   const s3Client = s3Clients[bucketRegion]
@@ -37,18 +39,22 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
       s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
       break
     } catch (err) {
-      if (err.code === 'NoSuchKey') { // not found
-        logger.error({ car, error: serializeError(err) }, `Cannot open file S3 URL ${url}, does not exists`)
-        throw err
+      if (err.code === 'NoSuchKey') {
+        // not found
+        logger.error({ error: serializeError(err) }, `Cannot open file S3 URL ${url}, does not exists`)
+        error = err
+        break
       }
-      logger.debug({ car }, `S3 Error, URL: ${url} Error: "${err.message}" attempt ${attempts + 1} / ${retries}`)
+      logger.debug(`S3 Error, URL: ${url} Error: "${err.message}" attempt ${attempts + 1} / ${retries}`)
       error = err
     }
     await sleep(retryDelay)
   } while (++attempts < retries)
 
   if (error) {
-    logger.error({ car, error: serializeError(error) }, `Cannot open file S3 URL ${url} after ${attempts} attempts`)
+    if (attempts === retries) {
+      logger.error({ error: serializeError(error) }, `Cannot open file S3 URL ${url} after ${attempts} attempts`)
+    }
     throw error
   }
 
@@ -59,10 +65,10 @@ async function openS3Stream (bucketRegion, url, car, retries = s3MaxRetries, ret
 
   // Start parsing as CAR file
   try {
-    const indexer = await CarIterator.fromReader(s3Request.Body, s3Request.ContentLength)
+    const indexer = await CarIterator.fromReader(s3Request.Body, s3Request.ContentLength, decodeBlocks)
     return { indexer, stats }
   } catch (e) {
-    logger.error({ car, error: serializeError(e) }, `Cannot parse file ${url} as CAR`)
+    logger.error({ error: serializeError(e) }, `Cannot parse file ${url} as CAR`)
     throw e
   }
 }

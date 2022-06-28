@@ -2,15 +2,16 @@
 
 const { readHeader, readBlockHead, asyncIterableReader } = require('@ipld/car/decoder')
 
-const { RAW_BLOCK_CODEC, decodeBlocks } = require('./config')
+const { RAW_BLOCK_CODEC } = require('../config')
 
 class CarIterator {
-  constructor(version, roots, reader, length) {
+  constructor(version, roots, reader, length, decodeBlocks) {
     this.version = version
     this.roots = roots
     this.reader = reader
     this.position = reader.pos
     this.length = length
+    this.decodeBlocks = decodeBlocks
   }
 
   // eslint-disable-next-line generator-star-spacing
@@ -20,7 +21,7 @@ class CarIterator {
       const offset = (this.position = this.reader.pos)
       const { cid, length, blockLength } = await readBlockHead(this.reader)
       this.currentCid = cid
-      const data = decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
+      const data = this.decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
 
       yield {
         cid,
@@ -36,11 +37,11 @@ class CarIterator {
   }
 }
 
-CarIterator.fromReader = async function fromReader(asyncIterable, length) {
+CarIterator.fromReader = async function fromReader(asyncIterable, length, decodeBlocks) {
   const reader = asyncIterableReader(asyncIterable)
   const { version, roots } = await readHeader(reader)
 
-  return new CarIterator(version, roots, reader, length)
+  return new CarIterator(version, roots, reader, length, decodeBlocks)
 }
 
 module.exports = { CarIterator, RAW_BLOCK_CODEC }

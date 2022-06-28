@@ -1,9 +1,9 @@
 'use strict'
 
-const { DynamoDBClient, GetItemCommand, PutItemCommand, UpdateItemCommand } = require('@aws-sdk/client-dynamodb')
+const { DynamoDBClient, GetItemCommand, PutItemCommand, BatchWriteItemCommand } = require('@aws-sdk/client-dynamodb')
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
-const { marshall: serializeDynamoItem } = require('@aws-sdk/util-dynamodb')
-const { SendMessageCommand, SQSClient } = require('@aws-sdk/client-sqs')
+const { marshall } = require('@aws-sdk/util-dynamodb')
+const { SendMessageCommand, SendMessageBatchCommand, SQSClient } = require('@aws-sdk/client-sqs')
 const { mockClient } = require('aws-sdk-client-mock')
 const { readFileSync } = require('fs')
 const { resolve } = require('path')
@@ -25,7 +25,7 @@ function readMockJSON(file, ...args) {
 }
 
 function mockDynamoGetItemCommand(table, keyName, keyValue, response) {
-  const params = { TableName: table, Key: serializeDynamoItem({ [keyName]: keyValue }) }
+  const params = { TableName: table, Key: marshall({ [keyName]: keyValue }) }
 
   if (typeof response === 'function') {
     dynamoMock.on(GetItemCommand, params).callsFake(response)
@@ -43,7 +43,7 @@ function mockS3GetObject(bucket, key, response, length, modified = Date.now(), i
     // Recreate the stream every time in order to being able to return the same content multiple times
     .callsFake(async () => {
       // Introduce delays so that we simulate a bit of network latency and replies are in order
-      await sleep(index * 100)
+      await sleep(index * 50)
 
       if (typeof response === 'function') {
         response = await response()
@@ -56,25 +56,29 @@ function mockS3GetObject(bucket, key, response, length, modified = Date.now(), i
 function trackDynamoUsages(t) {
   t.context.dynamo = {
     creates: [],
-    updates: []
+    batchCreates: []
   }
 
   dynamoMock.on(PutItemCommand).callsFake(params => {
     t.context.dynamo.creates.push(params)
   })
 
-  dynamoMock.on(UpdateItemCommand).callsFake(params => {
-    t.context.dynamo.updates.push(params)
+  dynamoMock.on(BatchWriteItemCommand).callsFake(params => {
+    t.context.dynamo.batchCreates.push(params)
   })
 }
 
 function trackSQSUsages(t) {
   t.context.sqs = {
-    publishes: []
+    publishes: [],
+    batchPublishes: []
   }
 
   sqsMock.on(SendMessageCommand).callsFake(params => {
     t.context.sqs.publishes.push(params)
+  })
+  sqsMock.on(SendMessageBatchCommand).callsFake(params => {
+    t.context.sqs.batchPublishes.push(params)
   })
 }
 

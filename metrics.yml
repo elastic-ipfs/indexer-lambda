@@ -5,6 +5,6 @@ metrics:
   s3-fetchs: AWS S3 GetObject
   dynamo-reads: AWS DynamoDB GetItem
   dynamo-creates: AWS DynamoDB PutItem
-  dynamo-updates: AWS DynamoDB UpdateItem
-  dynamo-deletes: AWS DynamoDB DeleteItem
+  dynamo-batch-inserts: AWS DynamoDB BatchWriteItem
   sqs-publishes: AWS SQS SendMessage
+  sqs-publishes-batch: AWS SQS SendMessages Batch

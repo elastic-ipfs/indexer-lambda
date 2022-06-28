@@ -27,7 +27,6 @@
     "dag-jose": "^1.0.0",
     "dotenv": "^10.0.0",
     "hdr-histogram-js": "^3.0.0",
-    "hwp": "^0.3.0",
     "ipfs-unixfs": "^6.0.6",
     "js-yaml": "^4.1.0",
     "multiformats": "^9.4.10",
@@ -43,7 +42,6 @@
     "eslint-plugin-promise": "^5.1.1",
     "pino-pretty": "^7.2.0",
     "prettier": "^2.4.1",
-    "sinon": "^14.0.0",
     "tap": "^15.1.6"
   },
   "engines": {
