@@ -50,6 +50,13 @@ async function publishBlocks({ blocks, logger, queue = config.publishingQueue })
   await publishBatch({ queue, messages: blocks.map(b => b.key), logger })
 }
 
+function storeBlocksTaskGenerator({ blocks, car, logger }) {
+  return async function storeBlocksTask() {
+    await writeBlocksBatch({ blocks, car, logger })
+    return { blocks, car }
+  }
+}
+
 async function storeBlocks({ car, source, logger, batchSize = config.blocksBatchSize, concurrency = config.concurrency, onTaskComplete }) {
   let count = 0
 
@@ -59,12 +66,8 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
   try {
     for await (const block of source) {
       if (batch.length === batchSize) {
-        // this function is coupled to publishBlocks
-        writes.add(async () => {
-          const blocks = [...batch]
-          await writeBlocksBatch({ blocks, car, logger })
-          return { blocks, car }
-        })
+        // the return of storeBlocksTask will be passed to publishBlocks
+        writes.add(storeBlocksTaskGenerator({ blocks: [...batch], car, logger }))
         batch.length = 0
       }
 
@@ -73,11 +76,7 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
     }
 
     if (batch.length > 0) {
-      writes.add(async () => {
-        const blocks = [...batch]
-        await writeBlocksBatch({ blocks, car, logger })
-        return { blocks, car }
-      })
+      writes.add(storeBlocksTaskGenerator({ blocks: [...batch], car, logger }))
     }
   } catch (error) {
     logger.error({ error: serializeError(error) }, 'Error queuing block tasks')
