@@ -6,7 +6,21 @@ const { storeCar } = require('./lib/car')
 const config = require('./config')
 
 /**
+ * Event to invoke the lambda
+ * @typedef {Object} Event
+ * @property {Array<Record>} Records
+ */
+
+/**
+ * @typedef {Object} Record
+ * @property {String} body - actually the CAR id
+ * @property {?Bool} skipExists - default `false`, skip to process the CAR if already exists in db
+ * @property {?Bool} decodeBlocks - default `false`, decode CAR blocks
+ */
+
+/**
  * Returns an empty object to signal we have consumed all the messages
+ * @param {Event} event
  */
 async function main(event) {
   if (event.Records.length !== 1) {
