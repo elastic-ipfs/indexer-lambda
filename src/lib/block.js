@@ -107,15 +107,15 @@ async function writeBlocksBatch({ blocks, car, logger }) {
     }
 
     blockItems.push({
-      [config.primaryKeys.blocks]: block.key,
+      [config.blocksTablePrimaryKey]: block.key,
       type: blockType(block.cid),
       createdAt: now(),
       data: blockData(block)
     })
 
     linkItems.push({
-      [config.primaryKeys.linkBlocks]: block.key,
-      [config.primaryKeys.linkCars]: car.id,
+      [config.linkTableBlockKey]: block.key,
+      [config.linkTableCarKey]: car.id,
       offset: block.blockOffset,
       length: block.blockLength
     })

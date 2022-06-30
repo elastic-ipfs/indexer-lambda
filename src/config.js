@@ -52,12 +52,10 @@ module.exports = {
   carsTable: carsTable ?? 'v1-cars',
   linkTable: linkTable ?? 'v1-blocks-cars',
 
-  primaryKeys: {
-    blocks: 'multihash',
-    cars: 'path',
-    linkBlocks: 'block-multihash',
-    linkCars: 'car-path'
-  },
+  blocksTablePrimaryKey: 'multihash',
+  carsTablePrimaryKey: 'path',
+  linkTableBlockKey: 'block-multihash',
+  linkTableCarKey: 'car-path',
 
   codecs,
   now: process.env.NOW,

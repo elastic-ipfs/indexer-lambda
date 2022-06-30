@@ -34,13 +34,13 @@ function openSource({ car, decodeBlocks, logger }) {
  * @async
  */
 function retrieveCar({ id, logger }) {
-  return readDynamoItem({ table: config.carsTable, keyName: config.primaryKeys.cars, keyValue: id, logger })
+  return readDynamoItem({ table: config.carsTable, keyName: config.carsTablePrimaryKey, keyValue: id, logger })
 }
 
 async function createCar({ car, source, logger }) {
   await createDynamoItem({
     table: config.carsTable,
-    keyName: config.primaryKeys.cars,
+    keyName: config.carsTablePrimaryKey,
     keyValue: car.id,
     data: {
       bucket: car.bucketName,

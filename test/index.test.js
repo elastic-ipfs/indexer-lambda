@@ -9,7 +9,7 @@ const { mockDynamoGetItemCommand, mockS3GetObject, trackDynamoUsages, trackSQSUs
 t.test('handler', async t => {
   t.test('indexes a new car file', async t => {
     mockS3GetObject('cars', 'file1.car', readMockData('cars/file1.car'), 148)
-    mockDynamoGetItemCommand(config.carsTable, config.primaryKeys.cars, 'us-east-2/cars/file1.car', undefined)
+    mockDynamoGetItemCommand(config.carsTable, config.carsTablePrimaryKey, 'us-east-2/cars/file1.car', undefined)
     trackDynamoUsages(t)
     trackSQSUsages(t)
 
@@ -20,7 +20,7 @@ t.test('handler', async t => {
 
   t.test('indexes a new car file with unsupported blocks', async t => {
     mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
-    mockDynamoGetItemCommand(config.carsTable, config.primaryKeys.cars, 'us-east-2/cars/file2.car', undefined)
+    mockDynamoGetItemCommand(config.carsTable, config.carsTablePrimaryKey, 'us-east-2/cars/file2.car', undefined)
     trackDynamoUsages(t)
     trackSQSUsages(t)
 
@@ -30,7 +30,7 @@ t.test('handler', async t => {
   })
 
   t.test('skip already parsed CAR files', async t => {
-    mockDynamoGetItemCommand(config.carsTable, config.primaryKeys.cars, 'aws-region/bucket/car-file.car', readMockJSON('parsed-cars/file1.json'))
+    mockDynamoGetItemCommand(config.carsTable, config.carsTablePrimaryKey, 'aws-region/bucket/car-file.car', readMockJSON('parsed-cars/file1.json'))
     trackDynamoUsages(t)
     trackSQSUsages(t)
 

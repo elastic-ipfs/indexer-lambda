@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/handler.test.js TAP handler indexes a new car file > must match snapshot 1`] = `
+exports[`test/index.test.js TAP handler indexes a new car file > must match snapshot 1`] = `
 Object {
   "dynamo": Object {
     "batchCreates": Array [
@@ -273,7 +273,7 @@ Object {
 }
 `
 
-exports[`test/handler.test.js TAP handler indexes a new car file with unsupported blocks > must match snapshot 1`] = `
+exports[`test/index.test.js TAP handler indexes a new car file with unsupported blocks > must match snapshot 1`] = `
 Object {
   "dynamo": Object {
     "batchCreates": Array [
