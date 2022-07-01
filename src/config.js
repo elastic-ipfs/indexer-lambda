@@ -54,8 +54,8 @@ module.exports = {
 
   blocksTablePrimaryKey: 'multihash',
   carsTablePrimaryKey: 'path',
-  linkTableBlockKey: 'block-multihash',
-  linkTableCarKey: 'car-path',
+  linkTableBlockKey: 'blockmultihash',
+  linkTableCarKey: 'carpath',
 
   codecs,
   now: process.env.NOW,

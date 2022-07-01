@@ -77,10 +77,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file1.car",
                   },
                   "length": Object {
@@ -95,10 +95,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file1.car",
                   },
                   "length": Object {
@@ -113,10 +113,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file1.car",
                   },
                   "length": Object {
@@ -131,10 +131,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file1.car",
                   },
                   "length": Object {
@@ -172,10 +172,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file1.car",
                   },
                   "length": Object {
@@ -300,10 +300,10 @@ Object {
             Object {
               "PutRequest": Object {
                 "Item": Object {
-                  "block-multihash": Object {
+                  "blockmultihash": Object {
                     "S": "zQmPH3Su9xAqw4WRbXT6DvwNpmaXYvTKKAY2hBKJsC7j2b4",
                   },
-                  "car-path": Object {
+                  "carpath": Object {
                     "S": "us-east-2/cars/file2.car",
                   },
                   "length": Object {
