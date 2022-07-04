@@ -34,7 +34,7 @@ t.test('handler', async t => {
     trackDynamoUsages(t)
     trackSQSUsages(t)
 
-    await handler({ Records: [{ body: 'aws-region/bucket/car-file.car', skipExists: true }] })
+    await handler({ Records: [{ body: JSON.stringify({ body: 'aws-region/bucket/car-file.car', skipExists: true }) }] })
 
     t.same(t.context.dynamo.creates.length, 0)
     t.same(t.context.dynamo.batchCreates.length, 0)
@@ -60,7 +60,14 @@ t.test('handler', async t => {
   t.test('fails indexing a new car file decoding unsupported blocks', async t => {
     mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
 
-    await t.rejects(() => handler({ Records: [{ body: 'us-east-2/cars/file2.car', decodeBlocks: true }] }),
+    await t.rejects(() => handler({ Records: [{ body: JSON.stringify({ body: 'us-east-2/cars/file2.car', decodeBlocks: true }) }] }),
       { message: 'Unsupported codec 35 in the block at offset 96' })
+  })
+
+  t.test('fails indexing a new car file decoding invalida body as json', async t => {
+    mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
+
+    await t.rejects(() => handler({ Records: [{ body: '{invalid-json' }] }),
+      { message: 'Invalid JSON in event body: {invalid-json' })
   })
 })

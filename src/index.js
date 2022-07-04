@@ -3,7 +3,6 @@
 const { logger, serializeError } = require('./lib/logging')
 const telemetry = require('./lib/telemetry')
 const { storeCar } = require('./lib/car')
-const config = require('./config')
 
 /**
  * Event to invoke the lambda
@@ -13,23 +12,37 @@ const config = require('./config')
 
 /**
  * @typedef {Object} Record
- * @property {String} body - actually the CAR id
- * @property {?Bool} skipExists - default `false`, skip to process the CAR if already exists in db
- * @property {?Bool} decodeBlocks - default `false`, decode CAR blocks
+ * @property {String} body - because of SQS message format, body can be the car id or the JSON stringified record with following properties:
+ * - skipExists - default `false`, skip to process the CAR if already exists in db
+ * - decodeBlocks - default `false`, decode CAR blocks
+ * @example { body: 'car-id' }
+ * @example { body: '{"body":"car-id",skipExists:true,"decodeBlocks":true}' }
  */
+
+function parseEvent(event) {
+  if (event.Records.length !== 1) {
+    logger.error(`Indexer Lambda invoked with ${event.Records.length} CARs while should be 1`)
+    throw new Error(`Indexer Lambda invoked with ${event.Records.length} CARs while should be 1`)
+  }
+
+  const body = event.Records[0].body
+  if (body[0] === '{') {
+    try {
+      const { body: carId, skipExists, decodeBlocks } = JSON.parse(body)
+      return { carId, skipExists, decodeBlocks }
+    } catch {
+      throw new Error('Invalid JSON in event body: ' + body)
+    }
+  }
+  return { carId: event.Records[0].body }
+}
 
 /**
  * Returns an empty object to signal we have consumed all the messages
  * @param {Event} event
  */
 async function main(event) {
-  if (event.Records.length !== 1) {
-    logger.error(`Indexer Lambda invoked with ${event.Records.length} CARs while should be 1`)
-    throw new Error(`Indexer Lambda invoked with ${event.Records.length} CARs while should be 1`)
-  }
-  const carId = event.Records[0].body
-  const skipExists = Boolean(event.Records[0].skipExists)
-  const decodeBlocks = event.Records[0].decodeBlocks ? Boolean(event.Records[0].decodeBlocks) : config.decodeBlocks
+  const { carId, skipExists, decodeBlocks } = parseEvent(event)
 
   try {
     try {
