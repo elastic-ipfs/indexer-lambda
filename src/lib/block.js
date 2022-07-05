@@ -75,7 +75,7 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
       count++
     }
 
-    // process remaing blocks in the last batch
+    // process remaning blocks in the last batch
     if (batch.length > 0) {
       writes.add(storeBlocksTaskGenerator({ blocks: [...batch], car, logger }))
     }
