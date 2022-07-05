@@ -68,7 +68,7 @@ module.exports = {
   skipPublishing: process.env.SKIP_PUBLISHING === 'true',
   skipDurations: process.env.SKIP_DURATIONS === 'true',
 
-  blocksBatchSize: parseInt(blocksBatchSize, 10) ?? 10,
+  blocksBatchSize: blocksBatchSize ? parseInt(blocksBatchSize, 10) : 10,
 
   dynamoMaxRetries: dynamoMaxRetries ?? 3,
   dynamoRetryDelay: dynamoRetryDelay ?? 100, // ms
