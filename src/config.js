@@ -61,7 +61,7 @@ module.exports = {
   now: process.env.NOW,
 
   /* c8 ignore next 10 */
-  concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 8,
+  concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 32,
   decodeBlocks: process.env.DECODE_BLOCKS === 'true',
   notificationsQueue: notificationsQueue ?? 'notificationsQueue',
   publishingQueue: publishingQueue ?? 'publishingQueue',

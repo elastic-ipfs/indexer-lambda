@@ -11,7 +11,7 @@ _Variables in bold are required._
 | AWS_ECR_REPOSITORY          |                    | The AWS ECR repository. **This is only required as GitHub repository secret.** |
 | AWS_REGION                  |                    | The AWS region. **This is also required as GitHub repository secret.**         |
 | AWS_SECRET_ACCESS_KEY       |                    | The AWS access key. **This is also required as GitHub repository secret.**     |
-| CONCURRENCY                 | `8`                | Concurrent batch inserts of blocks.                                            |
+| CONCURRENCY                 | `32`               | Concurrent batch inserts of blocks.                                            |
 | BLOCKS_BATCH_SIZE           | `10`               | Batch size for blocks ops (insert, publish). 10 is max for SQS, 25 is max for Dynamo |
 | DECODE_BLOCKS               |                    | Set to `true` to decode non raw block information and store then in DynamoDB   |
 | DYNAMO_BLOCKS_TABLE         | `v1-blocks`        | The DynamoDB table where store CIDs informations to.                           |
@@ -35,7 +35,7 @@ _Variables in bold are required._
 
 The lambda is invoked with the event containing the CAR file, for example: `us-east-2/dotstorage-prod-0/raw/bafkreidagwor4wsxxktnj66ph6ps6gw5cje445ne4oj4de5hgafvsdbdk4/nft-32259/xyz.car`
 
-Next, the `car` record is created and then the `blocks` are created and published in a batch of `10` (_BLOCKS_BATCH_SIZE_) at the time, with a concurrency of `8` _CONCURRENCY_ batch at a time.
+Next, the `car` record is created and then the `blocks` are created and published in a batch of `10` (_BLOCKS_BATCH_SIZE_) at the time, with a concurrency of `32` _CONCURRENCY_ batch at a time.
 
 Note that `10` for _BLOCKS_BATCH_SIZE_ is the optimal value because:
 
