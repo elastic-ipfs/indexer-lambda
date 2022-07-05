@@ -56,8 +56,6 @@ async function main(event) {
     logger.error({ car: carId, error: serializeError(err) }, 'Cannot index the CAR file')
     throw err
   }
-
-  return {}
 }
 
 exports.handler = main
