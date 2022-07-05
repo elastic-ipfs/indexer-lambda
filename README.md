@@ -37,7 +37,7 @@ The lambda is invoked with the event containing the CAR file, for example: `us-e
 
 Then, the `car` record is created and the `blocks` are been created and published in a batch of `10` (_BLOCKS_BATCH_SIZE_) at the time, with a concurrency of `8` _CONCURRENCY_ batch at a time.
 
-Note that `10` for _BLOCKS_BATCH_SIZE_ is the optimal solution because:
+Note that `10` for _BLOCKS_BATCH_SIZE_ is the optimal value because:
 
 - the limit for `DynamoDB` batch write operation is `25`, so on each batch 10 records on the `blocks` table and `10` records on the `link` table are written
 - the limit for `SQS` batch publish is `10`, so the blocks are notified as soon as are written
