@@ -35,7 +35,7 @@ _Variables in bold are required._
 
 The lambda is invoked with the event containing the CAR file, for example: `us-east-2/dotstorage-prod-0/raw/bafkreidagwor4wsxxktnj66ph6ps6gw5cje445ne4oj4de5hgafvsdbdk4/nft-32259/xyz.car`
 
-Then, the `car` record is created and the `blocks` are been created and published in a batch of `10` (_BLOCKS_BATCH_SIZE_) at the time, with a concurrency of `8` _CONCURRENCY_ batch at a time.
+Next, the `car` record is created and then the `blocks` are created and published in a batch of `10` (_BLOCKS_BATCH_SIZE_) at the time, with a concurrency of `8` _CONCURRENCY_ batch at a time.
 
 Note that `10` for _BLOCKS_BATCH_SIZE_ is the optimal value because:
 
