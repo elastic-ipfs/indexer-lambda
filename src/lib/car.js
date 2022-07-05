@@ -25,8 +25,8 @@ function validateCar(id) {
  * Load the file from input
  * @async
  */
-function openSource({ car, decodeBlocks, logger }) {
-  return openS3Stream({ bucketRegion: car.bucketRegion, url: car.url, decodeBlocks, logger })
+function openSource({ car, logger }) {
+  return openS3Stream({ bucketRegion: car.bucketRegion, url: car.url, logger })
 }
 
 /**
@@ -59,7 +59,7 @@ async function publishCar({ car, logger, queue = config.notificationsQueue }) {
   await publish({ queue, message: car.id, logger })
 }
 
-async function storeCar({ id, skipExists, decodeBlocks, logger }) {
+async function storeCar({ id, skipExists, logger }) {
   const start = process.hrtime.bigint()
 
   const car = validateCar(id)
@@ -76,7 +76,7 @@ async function storeCar({ id, skipExists, decodeBlocks, logger }) {
     }
   }
 
-  const source = await openSource({ car, decodeBlocks, logger })
+  const source = await openSource({ car, logger })
 
   await createCar({ car, source: source.indexer, logger })
 

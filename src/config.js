@@ -62,7 +62,8 @@ module.exports = {
 
   /* c8 ignore next 10 */
   concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 32,
-  decodeBlocks: process.env.DECODE_BLOCKS === 'true',
+  // disbled https://github.com/ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/pull/54#discussion_r913665164
+  // decodeBlocks: process.env.DECODE_BLOCKS === 'true', // decode CAR blocks
   notificationsQueue: notificationsQueue ?? 'notificationsQueue',
   publishingQueue: publishingQueue ?? 'publishingQueue',
   skipPublishing: process.env.SKIP_PUBLISHING === 'true',

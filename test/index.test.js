@@ -57,12 +57,14 @@ t.test('handler', async t => {
       { message: 'Invalid CAR file format' })
   })
 
-  t.test('fails indexing a new car file decoding unsupported blocks', async t => {
-    mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
+  // disabled decodeBlocks https://github.com/ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/pull/54#discussion_r913665164
+  // t.test('fails indexing a new car file decoding unsupported blocks', async t => {
+  //   process.env.DECODE_BLOCKS = 'true'
+  //   mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
 
-    await t.rejects(() => handler({ Records: [{ body: JSON.stringify({ body: 'us-east-2/cars/file2.car', decodeBlocks: true }) }] }),
-      { message: 'Unsupported codec 35 in the block at offset 96' })
-  })
+  //   await t.rejects(() => handler({ Records: [{ body: JSON.stringify({ body: 'us-east-2/cars/file2.car' }) }] }),
+  //     { message: 'Unsupported codec 35 in the block at offset 96' })
+  // })
 
   t.test('fails indexing a new car file decoding invalida body as json', async t => {
     mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)

@@ -14,9 +14,8 @@ const { storeCar } = require('./lib/car')
  * @typedef {Object} Record
  * @property {String} body - because of SQS message format, body can be the car id or the JSON stringified record with following properties:
  * - skipExists - default `false`, skip to process the CAR if already exists in db
- * - decodeBlocks - default `false`, decode CAR blocks
  * @example { body: 'car-id' }
- * @example { body: '{"body":"car-id",skipExists:true,"decodeBlocks":true}' }
+ * @example { body: '{"body":"car-id",skipExists:true}' }
  */
 
 function parseEvent(event) {
@@ -28,8 +27,8 @@ function parseEvent(event) {
   const body = event.Records[0].body
   if (body[0] === '{') {
     try {
-      const { body: carId, skipExists, decodeBlocks } = JSON.parse(body)
-      return { carId, skipExists, decodeBlocks }
+      const { body: carId, skipExists } = JSON.parse(body)
+      return { carId, skipExists }
     } catch {
       throw new Error('Invalid JSON in event body: ' + body)
     }
@@ -42,14 +41,14 @@ function parseEvent(event) {
  * @param {Event} event
  */
 async function main(event) {
-  const { carId, skipExists, decodeBlocks } = parseEvent(event)
+  const { carId, skipExists } = parseEvent(event)
 
   try {
     try {
       logger.debug('Indexing CARs progress')
 
       const carLogger = logger.child({ car: carId })
-      await storeCar({ id: carId, skipExists, decodeBlocks, logger: carLogger })
+      await storeCar({ id: carId, skipExists, logger: carLogger })
     } finally {
       telemetry.flush()
     }
