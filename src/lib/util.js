@@ -53,7 +53,7 @@ function queuedTasks({ concurrency = 1, onTaskComplete = noop } = {}) {
     running++
     try {
       const result = await f()
-      onTaskComplete(result)
+      await onTaskComplete(result)
     } catch (err) {
       error = err
     } finally {

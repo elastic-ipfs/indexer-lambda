@@ -123,8 +123,8 @@ t.test('queuedTasks', async t => {
 
     const result = await q.done()
 
-    // 6 means it runs the second "chunk" of tasks
-    t.same(done, 6)
+    // 5 means it runs right after the first error
+    t.same(done, 5)
     t.same(result.error, new Error('BOOM'))
   })
 
