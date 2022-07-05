@@ -94,12 +94,12 @@ async function sendCommand({ client, command, logger, retries = dynamoMaxRetries
       return await client.send(command)
     } catch (err) {
       error = err
-      logger.debug({ command, error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
+      logger.debug({ error: serializeError(err) }, `DynamoDB Error, attempt ${attempts + 1} / ${retries}`)
     }
     await sleep(retryDelay)
   } while (++attempts < retries)
 
-  logger.error({ command, error: serializeError(error) }, `Cannot send command to DynamoDB after ${attempts} attempts`)
+  logger.error({ error: serializeError(error) }, `Cannot send command to DynamoDB after ${attempts} attempts`)
   throw new Error('Cannot send command to DynamoDB')
 }
 
