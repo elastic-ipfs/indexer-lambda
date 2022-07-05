@@ -38,7 +38,7 @@ function parseEvent(event) {
 }
 
 /**
- * Returns an empty object to signal we have consumed all the messages
+ * Returns an empty object on success
  * @param {Event} event
  */
 async function main(event) {
