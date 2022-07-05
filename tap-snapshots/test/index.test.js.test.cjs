@@ -219,9 +219,6 @@ Object {
               },
             ],
           },
-          "updatedAt": Object {
-            "S": "2022-06-24T15:15:17.401Z",
-          },
           "version": Object {
             "N": "1",
           },
@@ -346,9 +343,6 @@ Object {
                 "S": "baerreian54jmxresipslpi3gybouz5tds5tzbjomhehfybpp34v3v6zuvm",
               },
             ],
-          },
-          "updatedAt": Object {
-            "S": "2022-06-24T15:15:17.401Z",
           },
           "version": Object {
             "N": "1",
