@@ -44,17 +44,15 @@ async function main(event) {
   const { carId, skipExists } = parseEvent(event)
 
   try {
-    try {
-      logger.debug('Indexing CARs progress')
+    logger.debug('Indexing CARs progress')
 
-      const carLogger = logger.child({ car: carId })
-      await storeCar({ id: carId, skipExists, logger: carLogger })
-    } finally {
-      telemetry.flush()
-    }
+    const carLogger = logger.child({ car: carId })
+    await storeCar({ id: carId, skipExists, logger: carLogger })
   } catch (err) {
     logger.error({ car: carId, error: serializeError(err) }, 'Cannot index the CAR file')
     throw err
+  } finally {
+    telemetry.flush()
   }
 }
 
