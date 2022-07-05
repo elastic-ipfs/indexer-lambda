@@ -47,7 +47,6 @@ async function createCar({ car, source, logger }) {
       bucketRegion: car.bucketRegion,
       key: car.key,
       createdAt: now(),
-      updatedAt: now(),
       roots: Array.from(new Set(source.roots.map(r => r.toString()))),
       version: source.version,
       fileSize: source.length
