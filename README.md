@@ -13,7 +13,6 @@ _Variables in bold are required._
 | AWS_SECRET_ACCESS_KEY       |                    | The AWS access key. **This is also required as GitHub repository secret.**     |
 | CONCURRENCY                 | `32`               | Concurrent batch inserts of blocks.                                            |
 | BLOCKS_BATCH_SIZE           | `10`               | Batch size for blocks ops (insert, publish). 10 is max for SQS, 25 is max for Dynamo |
-| DECODE_BLOCKS               |                    | Set to `true` to decode non raw block information and store then in DynamoDB   |
 | DYNAMO_BLOCKS_TABLE         | `v1-blocks`        | The DynamoDB table where store CIDs informations to.                           |
 | DYNAMO_CARS_TABLE           | `v1-cars`          | The DynamoDB table where store CAR files informations to.                      |
 | DYNAMO_LINK_TABLE           | `v1-blocks-cars`   | The DynamoDB table with CARs-blocks links.                                     |
