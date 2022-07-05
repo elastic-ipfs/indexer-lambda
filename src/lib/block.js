@@ -60,15 +60,15 @@ function storeBlocksTaskGenerator({ blocks, car, logger }) {
 async function storeBlocks({ car, source, logger, batchSize = config.blocksBatchSize, concurrency = config.concurrency, onTaskComplete }) {
   let count = 0
 
-  const batch = []
   const writes = queuedTasks({ concurrency, onTaskComplete })
 
   try {
+    let batch = []
     for await (const block of source) {
       if (batch.length === batchSize) {
         // the return of storeBlocksTask will be passed to publishBlocks
-        writes.add(storeBlocksTaskGenerator({ blocks: [...batch], car, logger }))
-        batch.length = 0
+        writes.add(storeBlocksTaskGenerator({ blocks: batch, car, logger }))
+        batch = []
       }
 
       batch.push(block)
@@ -77,7 +77,7 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
 
     // process remaning blocks in the last batch
     if (batch.length > 0) {
-      writes.add(storeBlocksTaskGenerator({ blocks: [...batch], car, logger }))
+      writes.add(storeBlocksTaskGenerator({ blocks: batch, car, logger }))
     }
   } catch (error) {
     logger.error({ error: serializeError(error) }, 'Error queuing block tasks')
