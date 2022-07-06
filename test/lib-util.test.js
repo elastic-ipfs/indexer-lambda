@@ -103,7 +103,37 @@ t.test('queuedTasks', async t => {
 
     const result = await q.done()
 
-    t.same(done, 4)
+    t.equal(done, 4)
+    t.same(result.error, new Error('BOOM'))
+  })
+
+  t.test('should ends on first task error in an async loop', async t => {
+    const q = queuedTasks({ concurrency: 1 })
+
+    const iterable = {
+      [Symbol.asyncIterator]() {
+        let i = 0
+        return {
+          next() {
+            const done = i === 16
+            const value = done ? undefined : i++
+            return Promise.resolve({ value, done })
+          }
+        }
+      }
+    }
+
+    let done
+    for await (const i of iterable) {
+      q.add(async () => {
+        done = i
+        if (i === 4) { throw new Error('BOOM') }
+      })
+    }
+
+    const result = await q.done()
+
+    t.equal(done, 4)
     t.same(result.error, new Error('BOOM'))
   })
 
@@ -123,8 +153,7 @@ t.test('queuedTasks', async t => {
 
     const result = await q.done()
 
-    // 5 means it runs right after the first error
-    t.same(done, 5)
+    t.ok(done < 6)
     t.same(result.error, new Error('BOOM'))
   })
 

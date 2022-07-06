@@ -37,6 +37,7 @@ function queuedTasks({ concurrency = 1, onTaskComplete = noop } = {}) {
   }
 
   function add(f) {
+    if (error) { return }
     _queue.push(f)
     run()
   }
