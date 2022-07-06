@@ -73,7 +73,7 @@ Object {
               },
             },
           ],
-          "v1-blocks-cars": Array [
+          "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
                 "Item": Object {
@@ -168,7 +168,7 @@ Object {
               },
             },
           ],
-          "v1-blocks-cars": Array [
+          "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
                 "Item": Object {
@@ -293,7 +293,7 @@ Object {
               },
             },
           ],
-          "v1-blocks-cars": Array [
+          "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
                 "Item": Object {

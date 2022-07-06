@@ -50,7 +50,7 @@ module.exports = {
   RAW_BLOCK_CODEC,
   blocksTable: blocksTable ?? 'v1-blocks',
   carsTable: carsTable ?? 'v1-cars',
-  linkTable: linkTable ?? 'v1-blocks-cars',
+  linkTable: linkTable ?? 'v1-blocks-cars-position',
 
   blocksTablePrimaryKey: 'multihash',
   carsTablePrimaryKey: 'path',
