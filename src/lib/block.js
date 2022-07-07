@@ -100,10 +100,16 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
 async function writeBlocksBatch({ blocks, car, logger }) {
   const blockItems = []
   const linkItems = []
+  const keys = []
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
     if (!block.key) {
       block.key = cidToKey(block.cid)
+    }
+
+    // HOTFIX
+    if (keys.includes(block.key)) {
+      continue
     }
 
     blockItems.push({
@@ -119,6 +125,9 @@ async function writeBlocksBatch({ blocks, car, logger }) {
       offset: block.blockOffset,
       length: block.blockLength
     })
+
+    // HOTFIX
+    keys.push(block.key)
   }
 
   const batch = [
