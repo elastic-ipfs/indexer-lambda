@@ -27,7 +27,8 @@ async function publish({ queue, message, logger }) {
 async function publishBatch({ queue, messages, logger }) {
   try {
     telemetry.increaseCount('sqs-publishes-batch')
-    const entries = messages.map(message => ({
+
+    const entries = [...new Set(messages)].map(message => ({
       Id: message,
       MessageBody: message
     }))
