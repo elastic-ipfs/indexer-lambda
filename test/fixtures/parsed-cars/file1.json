@@ -2,9 +2,6 @@
   "path": {
     "S": "us-east-2/cars/file1.car"
   },
-  "completed": {
-    "BOOL": true
-  },
   "version": {
     "N": "1"
   },
@@ -13,9 +10,6 @@
   },
   "durationTime": {
     "S": "6669.375"
-  },
-  "currentPosition": {
-    "N": "405"
   },
   "createdAt": {
     "S": "2022-01-27T14:29:26.354Z"

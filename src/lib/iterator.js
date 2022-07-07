@@ -2,7 +2,7 @@
 
 const { readHeader, readBlockHead, asyncIterableReader } = require('@ipld/car/decoder')
 
-const { RAW_BLOCK_CODEC, decodeBlocks } = require('./config')
+const { RAW_BLOCK_CODEC } = require('../config')
 
 class CarIterator {
   constructor(version, roots, reader, length) {
@@ -20,7 +20,8 @@ class CarIterator {
       const offset = (this.position = this.reader.pos)
       const { cid, length, blockLength } = await readBlockHead(this.reader)
       this.currentCid = cid
-      const data = decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
+      // disabled decodeBlocks https://github.com/ipfs-elastic-provider/ipfs-elastic-provider-indexer-lambda/pull/54#discussion_r913665164
+      // const data = this.decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
 
       yield {
         cid,
@@ -28,7 +29,7 @@ class CarIterator {
         blockOffset: this.reader.pos,
         offset,
         length,
-        data
+        data: undefined
       }
 
       this.reader.seek(blockLength)

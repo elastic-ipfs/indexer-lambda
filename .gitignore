@@ -3,3 +3,4 @@ dist/
 event*.json
 node_modules
 .vscode
+.nyc_output

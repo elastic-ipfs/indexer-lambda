@@ -4,7 +4,9 @@ coverage: false
 test-regex: "(?:\\.test\\.js)$"
 test-env:
   - ENV_FILE_PATH=test/fixtures/env
-  - LOG_LEVEL=fatal
-  - CACHE_BLOCKS_INFO=false
-  - NOW=2022-01-25T15:15:17.401Z
+  - LOG_LEVEL=silent
+  - NOW=2022-06-24T15:15:17.401Z
+  - CONCURRENCY=4
+  - SKIP_DURATIONS=true
+  - BLOCKS_BATCH_SIZE=4
 timeout: 60
