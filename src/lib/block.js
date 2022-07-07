@@ -53,7 +53,7 @@ async function publishBlocks({ blocks, logger, queue = config.publishingQueue })
 function storeBlocksTaskGenerator({ blocks, car, logger }) {
   return async function storeBlocksTask() {
     await writeBlocksBatch({ blocks, car, logger })
-    return { blocks, car }
+    return { blocks, car, logger }
   }
 }
 

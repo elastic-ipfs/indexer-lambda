@@ -1,6 +1,6 @@
 {
   "name": "aws-ipfs-indexing-lambda",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "AWS IPFS Indexing Lambda",
   "homepage": "https://github.com/web3-storage/aws-ipfs-indexing-lambda",
   "repository": "github:web3-storage/aws-ipfs-indexing-lambda",
