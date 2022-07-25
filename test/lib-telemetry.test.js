@@ -2,7 +2,7 @@
 
 process.env.ENV_FILE_PATH = 'dev/null'
 process.env.LOG_LEVEL = ''
-process.env.NODE_DEBUG = 'aws-ipfs-indexing-lambda'
+process.env.NODE_DEBUG = 'indexing-lambda'
 
 const t = require('tap')
 const { logger } = require('../src/lib/logging')

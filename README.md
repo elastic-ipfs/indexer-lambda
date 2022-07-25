@@ -1,4 +1,4 @@
-# AWS IPFS Indexing Lambda
+# Elastic IPFS Indexing Lambda
 
 ## Deployment environment variables
 
