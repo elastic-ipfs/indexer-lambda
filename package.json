@@ -1,9 +1,9 @@
 {
-  "name": "aws-ipfs-indexing-lambda",
+  "name": "indexing-lambda",
   "version": "0.3.2",
-  "description": "AWS IPFS Indexing Lambda",
-  "homepage": "https://github.com/web3-storage/aws-ipfs-indexing-lambda",
-  "repository": "github:web3-storage/aws-ipfs-indexing-lambda",
+  "description": "Elastic IPFS Indexing Lambda",
+  "homepage": "https://github.com/elastic-ipfs/indexing-lambda",
+  "repository": "github:web3-storage/indexing-lambda",
   "author": "Paolo Insogna <paolo.insogna@nearform.com>",
   "license": "(Apache-2.0 AND MIT)",
   "private": true,
