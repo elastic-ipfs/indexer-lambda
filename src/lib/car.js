@@ -4,7 +4,7 @@ const config = require('../config')
 const { elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
 const { createDynamoItem, readDynamoItem } = require('./storage')
-const { publish } = require('./publish')
+const { publish, notify } = require('./publish')
 const { now } = require('./util')
 const { storeBlocks, publishBlocks } = require('./block')
 
@@ -59,6 +59,35 @@ async function publishCar({ car, logger, queue = config.notificationsQueue }) {
   await publish({ queue, message: car.id, logger })
 }
 
+/**
+ * Broadcast IndexerComplete event on events pubsub topic
+ * @param {object} options
+ * @param {object} options.car
+ * @param {URL} options.car.url - url of CAR
+ * @param {URL} options.car.contentLength - byte length of CAR file
+ * @param {object} options.indexing - describes the indexing process
+ * @param {Date} options.indexing.startTime - when indexing began
+ * @param {Date} options.indexing.endTime - when indexing completed
+ */
+async function notifyIndexerCompletedEvent({
+  topic = config.eventsTopic,
+  car,
+  indexing
+}) {
+  await notify({
+    topic,
+    message: {
+      type: 'IndexerCompleted',
+      uri: car.url.toString(),
+      byteLength: car.contentLength,
+      indexing: {
+        startTime: indexing.startTime.toISOString(),
+        endTime: indexing.endTime.toISOString()
+      }
+    }
+  })
+}
+
 async function storeCar({ id, skipExists, logger }) {
   const start = process.hrtime.bigint()
 
@@ -84,7 +113,6 @@ async function storeCar({ id, skipExists, logger }) {
   const onTaskComplete = config.skipPublishing ? undefined : publishBlocks
   const blocks = await storeBlocks({ car, source: source.indexer, logger, onTaskComplete })
   await publishCar({ car, logger })
-
   logger.info(
     {
       car: car.id,
@@ -94,6 +122,17 @@ async function storeCar({ id, skipExists, logger }) {
     },
     'Indexing CAR complete'
   )
+  await notifyIndexerCompletedEvent({
+    car: {
+      url: car.url,
+      contentLength: source.stats.contentLength
+    },
+    indexing: {
+      // @todo - consider including duration as nanoseconds instead of startTime/endTime milliseconds-resolution Dates
+      startTime: new Date(Number(start) / 1e6),
+      endTime: new Date()
+    }
+  })
 }
 
 module.exports = {
