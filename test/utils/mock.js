@@ -97,6 +97,7 @@ function trackSNSUsages(t) {
 module.exports = {
   dynamoMock,
   s3Mock,
+  snsMock,
   sqsMock,
   mockDynamoGetItemCommand,
   mockS3GetObject,

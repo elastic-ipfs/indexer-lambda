@@ -68,13 +68,16 @@ async function publishCar({ car, logger, queue = config.notificationsQueue }) {
  * @param {object} options.indexing - describes the indexing process
  * @param {Date} options.indexing.startTime - when indexing began
  * @param {Date} options.indexing.endTime - when indexing completed
+ * @param {Logger} options.logger - used to log errors
  */
 async function notifyIndexerCompletedEvent({
   topic = config.eventsTopic,
   car,
-  indexing
+  indexing,
+  logger
 }) {
   await notify({
+    logger,
     topic,
     message: JSON.stringify({
       type: 'IndexerCompleted',

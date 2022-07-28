@@ -7,4 +7,5 @@ metrics:
   dynamo-creates: AWS DynamoDB PutItem
   dynamo-batch-inserts: AWS DynamoDB BatchWriteItem
   sqs-publishes: AWS SQS SendMessage
+  sns-publishes: AWS SNS Publish
   sqs-publishes-batch: AWS SQS SendMessages Batch
