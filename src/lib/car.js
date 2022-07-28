@@ -76,7 +76,7 @@ async function notifyIndexerCompletedEvent({
 }) {
   await notify({
     topic,
-    message: {
+    message: JSON.stringify({
       type: 'IndexerCompleted',
       uri: car.url.toString(),
       byteLength: car.contentLength,
@@ -84,7 +84,7 @@ async function notifyIndexerCompletedEvent({
         startTime: indexing.startTime.toISOString(),
         endTime: indexing.endTime.toISOString()
       }
-    }
+    })
   })
 }
 

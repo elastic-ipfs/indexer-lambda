@@ -44,14 +44,15 @@ async function publishBatch({ queue, messages, logger }) {
 
 /**
  * publish a message to a notification topic
- * @param {string} topic - topic to publish message to, e.g. an SNS ARN
- * @param message - message to send
- * @param {SNSClient} client - SNS client to issue command to
+ * @param {object} arg
+ * @param {string} arg.topic - topic to publish message to, e.g. an SNS ARN
+ * @param {string} arg.message - message to send
+ * @param {SNSClient} [arg.client] - SNS client to issue command to
  * @returns {Promise<void>}
  */
 async function notify({ client = snsClient, message, topic }) {
   const command = new PublishCommand({
-    Message: (typeof message === 'string') ? message : JSON.stringify(message),
+    Message: message,
     TopicArn: topic
   })
   await client.send(command)
