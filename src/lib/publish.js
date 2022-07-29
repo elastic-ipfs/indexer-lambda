@@ -48,11 +48,10 @@ async function publishBatch({ queue, messages, logger }) {
  * @param {string} arg.topic - topic to publish message to, e.g. an SNS ARN
  * @param {string} arg.message - message to send
  * @param {SNSClient} [arg.client] - SNS client to issue command to
- * @param {boolean} [arg.catchSendErrors=true] - whether to catch-and-log unexpected errors when sending the message
  * @param {Logger} logger - logger to use to log errors et al
  * @returns {Promise<void>}
  */
-async function notify({ client = snsClient, message, topic, catchSendErrors = true, logger }) {
+async function notify({ client = snsClient, message, topic, logger }) {
   telemetry.increaseCount('sns-publishes')
   const send = async () => {
     client.send(new PublishCommand({
@@ -64,9 +63,6 @@ async function notify({ client = snsClient, message, topic, catchSendErrors = tr
     await telemetry.trackDuration('sns-publishes', send())
   } catch (error) {
     logger.error({ error: serializeError(error), topic, message }, 'Cannot notify topic of message')
-    if (!catchSendErrors) {
-      throw error
-    }
   }
 }
 

@@ -109,24 +109,4 @@ t.test('notify', async t => {
     await notify({ client: erroringClient, message, topic, logger: fakeLogger })
     t.same(errorLogs, [[{ error: serializeError(fakeError), message, topic }, 'Cannot notify topic of message']])
   })
-  t.test('does not catch errors if catchSendErrors=false', async t => {
-    const fakeLogger = {
-      error: (...args) => {
-      }
-    }
-    const fakeError = new Error('faked test error')
-    const erroringClient = {
-      send(command) {
-        throw fakeError
-      }
-    }
-    let expectedError
-    try {
-      await notify({ client: erroringClient, message: '', topic: '', catchSendErrors: false, logger: fakeLogger })
-    } catch (error) {
-      expectedError = error
-    }
-    t.ok(expectedError, 'notify should have thrown error')
-    t.equal(expectedError.message, fakeError.message)
-  })
 })
