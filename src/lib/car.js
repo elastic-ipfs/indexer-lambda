@@ -134,7 +134,8 @@ async function storeCar({ id, skipExists, logger }) {
       // @todo - consider including duration as nanoseconds instead of startTime/endTime milliseconds-resolution Dates
       startTime: new Date(Number(start) / 1e6),
       endTime: new Date()
-    }
+    },
+    logger
   })
 }
 
