@@ -54,10 +54,11 @@ async function publishBatch({ queue, messages, logger }) {
 async function notify({ client = snsClient, message, topic, logger }) {
   telemetry.increaseCount('sns-publishes')
   const send = async () => {
-    client.send(new PublishCommand({
+    const response = await client.send(new PublishCommand({
       Message: message,
       TopicArn: topic
     }))
+    logger.info(`sent sns message on topic=${topic} response=${response}`)
   }
   try {
     await telemetry.trackDuration('sns-publishes', send())
