@@ -5,6 +5,7 @@ const { SendMessageCommand, SendMessageBatchCommand } = require('@aws-sdk/client
 const { serializeError } = require('../src/lib/logging')
 const { publish, publishBatch, notify } = require('../src/lib/publish')
 const { sqsMock } = require('./utils/mock')
+const { logger: defaultLogger } = require('../src/lib/logging')
 
 t.test('publish', async t => {
   t.test('should call SQSClient with "SendMessageCommand"', async t => {
@@ -84,7 +85,7 @@ t.test('notify', async t => {
         return Promise.resolve()
       }
     }
-    await notify({ client: fakeClient, message, topic })
+    await notify({ client: fakeClient, message, topic, logger: defaultLogger })
     t.equal(sentCommands.length, 1)
     const [command] = sentCommands
     t.equal(command.input.Message, message)
