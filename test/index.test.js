@@ -4,7 +4,7 @@ const t = require('tap')
 const config = require('../src/config')
 const { handler } = require('../src/index')
 const helper = require('./utils/helpers')
-const { mockDynamoGetItemCommand, mockS3GetObject, trackDynamoUsages, trackSQSUsages, readMockJSON, readMockData } = require('./utils/mock')
+const { mockDynamoGetItemCommand, mockS3GetObject, trackDynamoUsages, trackSQSUsages, readMockJSON, readMockData, trackSNSUsages } = require('./utils/mock')
 
 t.test('handler', async t => {
   t.test('indexes a new car file', async t => {
@@ -12,9 +12,11 @@ t.test('handler', async t => {
     mockDynamoGetItemCommand(config.carsTable, config.carsTablePrimaryKey, 'us-east-2/cars/file1.car', undefined)
     trackDynamoUsages(t)
     trackSQSUsages(t)
+    trackSNSUsages(t)
 
     await handler(helper.generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
-
+    t.equal(t.context.sns.publishes.length, 1)
+    t.ok(t.context.sns.publishes.some(p => p.Message.includes('IndexerCompleted')), 'handler published IndexerCompleted event to SNS')
     t.matchSnapshot({ dynamo: t.context.dynamo, sqs: t.context.sqs })
   })
 

@@ -3,7 +3,7 @@
 const t = require('tap')
 const { SendMessageCommand, SendMessageBatchCommand } = require('@aws-sdk/client-sqs')
 const { serializeError } = require('../src/lib/logging')
-const { publish, publishBatch } = require('../src/lib/publish')
+const { publish, publishBatch, notify } = require('../src/lib/publish')
 const { sqsMock } = require('./utils/mock')
 
 t.test('publish', async t => {
@@ -70,5 +70,43 @@ t.test('publishBatch', async t => {
     }
 
     await publishBatch({ queue, messages, logger: loggerSpy })
+  })
+})
+
+t.test('notify', async t => {
+  t.test('calls SNSClient with "SendMessageCommand"', async t => {
+    const topic = `topic-${Math.random().toString().slice(2)}`
+    const message = JSON.stringify({ name: `message-${topic} ` })
+    const sentCommands = []
+    const fakeClient = {
+      send(command) {
+        sentCommands.push(command)
+        return Promise.resolve()
+      }
+    }
+    await notify({ client: fakeClient, message, topic })
+    t.equal(sentCommands.length, 1)
+    const [command] = sentCommands
+    t.equal(command.input.Message, message)
+    t.equal(command.input.TopicArn, topic)
+  })
+  t.test('logs on errors', async t => {
+    const createFakeError = () => new Error('faked test error')
+    const fakeError = createFakeError()
+    const erroringClient = {
+      send(command) {
+        throw fakeError
+      }
+    }
+    const errorLogs = []
+    const fakeLogger = {
+      error: (...args) => {
+        errorLogs.push(args)
+      }
+    }
+    const topic = `topic-${Math.random().toString().slice(2)}`
+    const message = JSON.stringify({ name: `message-${topic} ` })
+    await notify({ client: erroringClient, message, topic, logger: fakeLogger })
+    t.same(errorLogs, [[{ error: serializeError(fakeError), message, topic }, 'Cannot notify topic of message']])
   })
 })

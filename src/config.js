@@ -17,6 +17,8 @@ const {
 
   BLOCKS_BATCH_SIZE: blocksBatchSize,
 
+  SNS_EVENTS_TOPIC: eventsTopic,
+
   SQS_NOTIFICATIONS_QUEUE_URL: notificationsQueue,
   SQS_PUBLISHING_QUEUE_URL: publishingQueue,
 
@@ -66,6 +68,7 @@ module.exports = {
   // decodeBlocks: process.env.DECODE_BLOCKS === 'true', // decode CAR blocks
   notificationsQueue: notificationsQueue ?? 'notificationsQueue',
   publishingQueue: publishingQueue ?? 'publishingQueue',
+  eventsTopic: eventsTopic ?? 'eventsTopic',
   skipPublishing: process.env.SKIP_PUBLISHING === 'true',
   skipDurations: process.env.SKIP_DURATIONS === 'true',
 

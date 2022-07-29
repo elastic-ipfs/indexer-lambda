@@ -4,6 +4,7 @@ const { DynamoDBClient, GetItemCommand, PutItemCommand, BatchWriteItemCommand } 
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const { marshall } = require('@aws-sdk/util-dynamodb')
 const { SendMessageCommand, SendMessageBatchCommand, SQSClient } = require('@aws-sdk/client-sqs')
+const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns')
 const { mockClient } = require('aws-sdk-client-mock')
 const { readFileSync } = require('fs')
 const { resolve } = require('path')
@@ -13,6 +14,7 @@ const { setTimeout: sleep } = require('timers/promises')
 const dynamoMock = mockClient(DynamoDBClient)
 const s3Mock = mockClient(S3Client)
 const sqsMock = mockClient(SQSClient)
+const snsMock = mockClient(SNSClient)
 
 function readMockData(file, from, to) {
   const buffer = readFileSync(resolve(process.cwd(), `test/fixtures/${file}`))
@@ -82,14 +84,26 @@ function trackSQSUsages(t) {
   })
 }
 
+function trackSNSUsages(t) {
+  t.context.sns = {
+    publishes: []
+  }
+
+  snsMock.on(PublishCommand).callsFake(params => {
+    t.context.sns.publishes.push(params)
+  })
+}
+
 module.exports = {
   dynamoMock,
   s3Mock,
+  snsMock,
   sqsMock,
   mockDynamoGetItemCommand,
   mockS3GetObject,
   trackDynamoUsages,
   trackSQSUsages,
+  trackSNSUsages,
   readMockData,
   readMockJSON
 }
