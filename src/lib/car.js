@@ -4,7 +4,7 @@ const config = require('../config')
 const { elapsed } = require('./logging')
 const { openS3Stream } = require('./source')
 const { createDynamoItem, readDynamoItem } = require('./storage')
-const { publish, notify } = require('./publish')
+const { notify } = require('./publish')
 const { now } = require('./util')
 const { storeBlocks, publishBlocks } = require('./block')
 
@@ -53,10 +53,6 @@ async function createCar({ car, source, logger }) {
     },
     logger
   })
-}
-
-async function publishCar({ car, logger, queue = config.notificationsQueue }) {
-  await publish({ queue, message: car.id, logger })
 }
 
 /**
@@ -115,7 +111,6 @@ async function storeCar({ id, skipExists, logger }) {
   /* c8 ignore next */
   const onTaskComplete = config.skipPublishing ? undefined : publishBlocks
   const blocks = await storeBlocks({ car, source: source.indexer, logger, onTaskComplete })
-  await publishCar({ car, logger })
   logger.info(
     {
       car: car.id,

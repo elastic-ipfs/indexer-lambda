@@ -260,12 +260,7 @@ Object {
         "QueueUrl": "publishingQueue",
       },
     ],
-    "publishes": Array [
-      Object {
-        "MessageBody": "us-east-2/cars/file1.car",
-        "QueueUrl": "notificationsQueue",
-      },
-    ],
+    "publishes": Array [],
   },
 }
 `
@@ -364,12 +359,7 @@ Object {
         "QueueUrl": "publishingQueue",
       },
     ],
-    "publishes": Array [
-      Object {
-        "MessageBody": "us-east-2/cars/file2.car",
-        "QueueUrl": "notificationsQueue",
-      },
-    ],
+    "publishes": Array [],
   },
 }
 `

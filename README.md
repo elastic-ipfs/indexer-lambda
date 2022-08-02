@@ -26,7 +26,6 @@ _Variables in bold are required._
 | SKIP_PUBLISHING             |                    | Set to `true` to skip publishing indexed multihashes to SQS.                   |
 | SKIP_DURATIONS              |                    | Set to `true` to omit time durations in logs.                                  |
 | SQS_PUBLISHING_QUEUE_URL    |                    | The SQS topic to publish indexed multihashes to.                               |
-| SQS_NOTIFICATIONS_QUEUE_URL |                    | The SQS topic to publish notifications                                         |
 
 ---
 
