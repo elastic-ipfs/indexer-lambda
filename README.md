@@ -25,6 +25,7 @@ _Variables in bold are required._
 | NODE_ENV                    |                    | Set to `production` to disable pretty logging.                                 |
 | SKIP_PUBLISHING             |                    | Set to `true` to skip publishing indexed multihashes to SQS.                   |
 | SKIP_DURATIONS              |                    | Set to `true` to omit time durations in logs.                                  |
+| SNS_EVENTS_TOPIC            |                    | The SNS topic to publish elastic-ipfs events to.                               |
 | SQS_PUBLISHING_QUEUE_URL    |                    | The SQS topic to publish indexed multihashes to.                               |
 
 ---
