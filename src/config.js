@@ -19,7 +19,6 @@ const {
 
   SNS_EVENTS_TOPIC: eventsTopic,
 
-  SQS_NOTIFICATIONS_QUEUE_URL: notificationsQueue,
   SQS_PUBLISHING_QUEUE_URL: publishingQueue,
 
   S3_MAX_RETRIES: s3MaxRetries,
@@ -66,7 +65,6 @@ module.exports = {
   concurrency: !isNaN(concurrency) && concurrency > 0 ? concurrency : 32,
   // disbled https://github.com/elastic-ipfs/indexer-lambda/pull/54#discussion_r913665164
   // decodeBlocks: process.env.DECODE_BLOCKS === 'true', // decode CAR blocks
-  notificationsQueue: notificationsQueue ?? 'notificationsQueue',
   publishingQueue: publishingQueue ?? 'publishingQueue',
   eventsTopic: eventsTopic ?? 'eventsTopic',
   skipPublishing: process.env.SKIP_PUBLISHING === 'true',
