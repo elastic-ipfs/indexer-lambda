@@ -3,6 +3,8 @@
 const t = require('tap')
 const config = require('../src/config')
 const { handler } = require('../src/index')
+const { Nanoseconds } = require('../src/lib/car')
+const { NANOSECONDS_UNECE_UNIT_CODE } = require('../src/lib/time')
 const helper = require('./utils/helpers')
 const { mockDynamoGetItemCommand, mockS3GetObject, trackDynamoUsages, trackSQSUsages, readMockJSON, readMockData, trackSNSUsages } = require('./utils/mock')
 
@@ -16,7 +18,8 @@ t.test('handler', async t => {
 
     await handler(helper.generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
     t.equal(t.context.sns.publishes.length, 1)
-    t.ok(t.context.sns.publishes.some(p => p.Message.includes('IndexerCompleted')), 'handler published IndexerCompleted event to SNS')
+    const [publish] = t.context.sns.publishes
+    assertIsIndexerCompletedPublish(t, publish)
     t.matchSnapshot({ dynamo: t.context.dynamo, sqs: t.context.sqs })
   })
 
@@ -75,3 +78,25 @@ t.test('handler', async t => {
       { message: 'Invalid JSON in event body: {invalid-json' })
   })
 })
+
+function assertIsIndexerCompletedPublish(t, snsPublish) {
+  const event = JSON.parse(snsPublish.Message)
+  assertIsIndexerCompletedEvent(t, event)
+}
+
+function assertIsIndexerCompletedEvent(t, event) {
+  t.equal(event.type, 'IndexerCompleted', 'event has type IndexerCompleted')
+  t.ok(event.indexing, 'event has .indexing')
+  for (const property of ['startTime', 'endTime']) {
+    t.equal(typeof event.indexing[property], 'string', `${property} is a string`)
+    t.equal(isNaN(Date.parse(event.indexing[property])), false, `${property} is parseable as a Date`)
+  }
+  if (event.indexing.startTime && event.indexing.endTime) {
+    const toDate = (dateString) => new Date(Date.parse(dateString))
+    t.equal(toDate(event.indexing.startTime) < toDate(event.indexing.endTime), true, 'startTime is before endTime')
+  }
+  t.equal(event.indexing.duration.unitCode, NANOSECONDS_UNECE_UNIT_CODE, 'indexing duration unitCode indicates nanoseconds')
+  t.equal(typeof event.indexing.duration.value, 'string', 'indexing duration value is a string')
+  t.equal(Nanoseconds.fromJSON(event.indexing.duration) instanceof Nanoseconds, true, 'indexing duration can be converted to Nanoseconds')
+  t.equal(event.indexing.duration.value > 0, true, 'indexing duration is greater than zero')
+}
