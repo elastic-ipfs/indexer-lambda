@@ -3,6 +3,7 @@
 const t = require('tap')
 const config = require('../src/config')
 const { handler } = require('../src/index')
+const { Nanoseconds, NANOSECONDS_UNECE_UNIT_CODE } = require('../src/lib/time')
 const helper = require('./utils/helpers')
 const { mockDynamoGetItemCommand, mockS3GetObject, trackDynamoUsages, trackSQSUsages, readMockJSON, readMockData, trackSNSUsages } = require('./utils/mock')
 
@@ -96,4 +97,8 @@ function assertIsIndexerCompletedEvent(t, event, maxDurationMs = ONE_HOUR_MILLIS
     t.equal(toDate(event.indexing.startTime) < toDate(event.indexing.endTime), true, 'startTime is before endTime')
     t.equal(toDate(event.indexing.endTime) - toDate(event.indexing.startTime) < maxDurationMs, true, 'endTime-startTime difference should be less than maxDurationMs')
   }
+  t.equal(event.indexing.duration.unitCode, NANOSECONDS_UNECE_UNIT_CODE, 'indexing duration unitCode indicates nanoseconds')
+  t.equal(typeof event.indexing.duration.value, 'string', 'indexing duration value is a string')
+  const indexingDuration = Nanoseconds.fromJSON(event.indexing.duration)
+  t.equal(indexingDuration.value > BigInt(0), true, 'indexing duration is greater than zero')
 }

@@ -7,6 +7,7 @@ const { createDynamoItem, readDynamoItem } = require('./storage')
 const { notify } = require('./publish')
 const { now } = require('./util')
 const { storeBlocks, publishBlocks } = require('./block')
+const { Nanoseconds } = require('./time')
 
 function validateCar(id) {
   try {
@@ -63,6 +64,7 @@ async function createCar({ car, source, logger }) {
  * @param {URL} options.car.contentLength - byte length of CAR file
  * @param {object} options.indexing - describes the indexing process
  * @param {Date} options.indexing.startTime - when indexing began
+ * @param {Nanoseconds} options.indexing.duration - duration of indexing
  * @param {Date} options.indexing.endTime - when indexing completed
  * @param {Logger} options.logger - used to log errors
  */
@@ -80,6 +82,7 @@ async function notifyIndexerCompletedEvent({
       uri: car.url.toString(),
       byteLength: car.contentLength,
       indexing: {
+        duration: indexing.duration,
         startTime: indexing.startTime.toISOString(),
         endTime: indexing.endTime.toISOString()
       }
@@ -127,9 +130,10 @@ async function storeCar({ id, skipExists, logger }) {
       contentLength: source.stats.contentLength
     },
     indexing: {
-      // @todo - consider including duration as nanoseconds instead of startTime/endTime milliseconds-resolution Dates
       startTime: startDate,
-      endTime: new Date()
+      endTime: new Date(),
+      // https://schema.org/duration
+      duration: new Nanoseconds(process.hrtime.bigint() - start)
     },
     logger
   })
