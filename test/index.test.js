@@ -16,7 +16,8 @@ t.test('handler', async t => {
 
     await handler(helper.generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file1.car' }))
     t.equal(t.context.sns.publishes.length, 1)
-    t.ok(t.context.sns.publishes.some(p => p.Message.includes('IndexerCompleted')), 'handler published IndexerCompleted event to SNS')
+    const [publish] = t.context.sns.publishes
+    assertIsIndexerCompletedPublish(t, publish)
     t.matchSnapshot({ dynamo: t.context.dynamo, sqs: t.context.sqs })
   })
 
@@ -75,3 +76,21 @@ t.test('handler', async t => {
       { message: 'Invalid JSON in event body: {invalid-json' })
   })
 })
+
+function assertIsIndexerCompletedPublish(t, snsPublish) {
+  const event = JSON.parse(snsPublish.Message)
+  assertIsIndexerCompletedEvent(t, event)
+}
+
+function assertIsIndexerCompletedEvent(t, event) {
+  t.equal(event.type, 'IndexerCompleted', 'event has type IndexerCompleted')
+  t.ok(event.indexing, 'event has .indexing')
+  for (const property of ['startTime', 'endTime']) {
+    t.equal(typeof event.indexing[property], 'string', `${property} is a string`)
+    t.equal(isNaN(Date.parse(event.indexing[property])), false, `${property} is parseable as a Date`)
+  }
+  if (event.indexing.startTime && event.indexing.endTime) {
+    const toDate = (dateString) => new Date(Date.parse(dateString))
+    t.equal(toDate(event.indexing.startTime) < toDate(event.indexing.endTime), true, 'startTime is before endTime')
+  }
+}
