@@ -9,15 +9,15 @@ const NANOSECONDS_UNECE_UNIT_CODE = 'C47'
 
 class Nanoseconds {
   /**
-     * @param {bigint} value
-     */
+   * @param {bigint} value
+   */
   constructor(value) {
     this.value = value
   }
 
   /**
-     * @returns {JsonNanoseconds}
-     */
+   * @returns {JsonNanoseconds}
+   */
   toJSON() {
     return {
       unitCode: NANOSECONDS_UNECE_UNIT_CODE,
@@ -26,8 +26,9 @@ class Nanoseconds {
   }
 
   /**
-     * @param {JsonNanoseconds} arg
-     */
+   * @param {JsonNanoseconds} arg
+   * @returns {Nanoseconds}
+   */
   static fromJSON(arg) {
     return new Nanoseconds(BigInt(arg.value))
   }
