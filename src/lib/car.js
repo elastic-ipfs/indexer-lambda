@@ -89,6 +89,7 @@ async function notifyIndexerCompletedEvent({
 
 async function storeCar({ id, skipExists, logger }) {
   const start = process.hrtime.bigint()
+  const startDate = new Date()
 
   const car = validateCar(id)
   if (!car) {
@@ -127,7 +128,7 @@ async function storeCar({ id, skipExists, logger }) {
     },
     indexing: {
       // @todo - consider including duration as nanoseconds instead of startTime/endTime milliseconds-resolution Dates
-      startTime: new Date(Number(start) / 1e6),
+      startTime: startDate,
       endTime: new Date()
     },
     logger
