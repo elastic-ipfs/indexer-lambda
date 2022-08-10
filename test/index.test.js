@@ -82,7 +82,9 @@ function assertIsIndexerCompletedPublish(t, snsPublish) {
   assertIsIndexerCompletedEvent(t, event)
 }
 
-function assertIsIndexerCompletedEvent(t, event) {
+const ONE_HOUR_MILLISECONDS = 1000 * 60 * 60
+
+function assertIsIndexerCompletedEvent(t, event, maxDurationMs = ONE_HOUR_MILLISECONDS) {
   t.equal(event.type, 'IndexerCompleted', 'event has type IndexerCompleted')
   t.ok(event.indexing, 'event has .indexing')
   for (const property of ['startTime', 'endTime']) {
@@ -92,5 +94,6 @@ function assertIsIndexerCompletedEvent(t, event) {
   if (event.indexing.startTime && event.indexing.endTime) {
     const toDate = (dateString) => new Date(Date.parse(dateString))
     t.equal(toDate(event.indexing.startTime) < toDate(event.indexing.endTime), true, 'startTime is before endTime')
+    t.equal(toDate(event.indexing.endTime) - toDate(event.indexing.startTime) < maxDurationMs, true, 'endTime-startTime difference should be less than maxDurationMs')
   }
 }
