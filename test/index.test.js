@@ -84,7 +84,9 @@ function assertIsIndexerCompletedPublish(t, snsPublish) {
   assertIsIndexerCompletedEvent(t, event)
 }
 
-function assertIsIndexerCompletedEvent(t, event) {
+const ONE_HOUR_MILLISECONDS = 1000 * 60 * 60
+
+function assertIsIndexerCompletedEvent(t, event, maxDurationMs = ONE_HOUR_MILLISECONDS) {
   t.equal(event.type, 'IndexerCompleted', 'event has type IndexerCompleted')
   t.ok(event.indexing, 'event has .indexing')
   for (const property of ['startTime', 'endTime']) {
@@ -99,4 +101,5 @@ function assertIsIndexerCompletedEvent(t, event) {
   t.equal(typeof event.indexing.duration.value, 'string', 'indexing duration value is a string')
   t.equal(Nanoseconds.fromJSON(event.indexing.duration) instanceof Nanoseconds, true, 'indexing duration can be converted to Nanoseconds')
   t.equal(event.indexing.duration.value > 0, true, 'indexing duration is greater than zero')
+  t.equal(toDate(event.indexing.endTime) - toDate(event.indexing.startTime) < maxDurationMs, true, 'endTime-startTime difference should be less than maxDurationMs')
 }

@@ -92,6 +92,7 @@ async function notifyIndexerCompletedEvent({
 
 async function storeCar({ id, skipExists, logger }) {
   const start = process.hrtime.bigint()
+  const startDate = new Date()
 
   const car = validateCar(id)
   if (!car) {
@@ -129,7 +130,7 @@ async function storeCar({ id, skipExists, logger }) {
       contentLength: source.stats.contentLength
     },
     indexing: {
-      startTime: new Date(Number(start) / 1e6),
+      startTime: startDate,
       endTime: new Date(),
       // https://schema.org/duration
       duration: new Nanoseconds(process.hrtime.bigint() - start)
@@ -139,6 +140,5 @@ async function storeCar({ id, skipExists, logger }) {
 }
 
 module.exports = {
-  Nanoseconds,
   storeCar
 }
