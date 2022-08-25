@@ -25,15 +25,17 @@ function parseEvent(event) {
   }
 
   const body = event.Records[0].body
+  const msgReceiveCount = event.Records[0].Attributes.ApproximateReceiveCount
+  // TODO: If that's not the attribute, print all attributes to find the one
   if (body[0] === '{') {
     try {
       const { body: carId, skipExists } = JSON.parse(body)
-      return { carId, skipExists }
+      return { carId, skipExists, msgReceiveCount }
     } catch {
       throw new Error('Invalid JSON in event body: ' + body)
     }
   }
-  return { carId: event.Records[0].body }
+  return { carId: event.Records[0].body, msgReceiveCount }
 }
 
 /**
