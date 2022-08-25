@@ -25,12 +25,12 @@ function parseEvent(event) {
   }
 
   const body = event.Records[0].body
-  const msgReceiveCount = event.Records[0].Attributes.ApproximateReceiveCount
+  const msgReceiveCount = event.Records[0].Attributes?.ApproximateReceiveCount
   // /// TODO: DEBUG If that's not the attribute, print all attributes to find the one
   console.log('***** record object properties')
   console.log(JSON.stringify(event.Records[0], null, 4))
-  console.log('***** record attributes object properties')
-  console.log(JSON.stringify(event.Records[0].Attributes, null, 4))
+  // console.log('***** record attributes object properties')
+  // console.log(JSON.stringify(event.Records[0].Attributes, null, 4))
   // ///
 
   if (body[0] === '{') {

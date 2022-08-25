@@ -36,7 +36,8 @@ t.test('handler', async t => {
     trackDynamoUsages(t)
     trackSQSUsages(t)
 
-    await handler({ Records: [{ body: JSON.stringify({ body: 'aws-region/bucket/car-file.car', skipExists: true }) }] })
+    // TODO: Also user helper for keeping consistency
+    await handler({ Records: [{ body: JSON.stringify({ body: 'aws-region/bucket/car-file.car', skipExists: true }), Attributes: { ApproximateReceiveCount: 0 } }] })
 
     t.same(t.context.dynamo.creates.length, 0)
     t.same(t.context.dynamo.batchCreates.length, 0)
