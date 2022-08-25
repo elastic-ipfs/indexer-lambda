@@ -25,7 +25,7 @@ function parseEvent(event) {
   }
 
   const body = event.Records[0].body
-  const msgReceiveCount = event.Records[0].Attributes?.ApproximateReceiveCount
+  const msgReceiveCount = event.Records[0].attributes?.ApproximateReceiveCount
   if (body[0] === '{') {
     try {
       const { body: carId, skipExists } = JSON.parse(body)
