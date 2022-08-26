@@ -45,10 +45,6 @@ async function main(event) {
   const { carId, skipExists, msgReceiveCount } = parseEvent(event)
 
   try {
-    // /// TODO: DEBUG If that's not the attribute, print all attributes to find the one
-    logger.info('***** record object properties')
-    logger.info(JSON.stringify(event.Records[0], null, 4))
-    // ///
     logger.debug('Indexing CARs progress')
     const carLogger = logger.child({ car: carId })
     await storeCar({ id: carId, skipExists, logger: carLogger })
