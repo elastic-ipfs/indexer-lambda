@@ -5,7 +5,7 @@ function generateEvent(...pairs) {
     Records: pairs.map(({ bucketRegion, bucket, key }) => {
       return {
         body: `${bucketRegion}/${bucket}/${key}`,
-        attributes: { ApproximateReceiveCount: 0 }
+        attributes: { ApproximateReceiveCount: 1 }
       }
     })
   }
