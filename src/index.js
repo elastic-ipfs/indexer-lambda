@@ -25,15 +25,16 @@ function parseEvent(event) {
   }
 
   const body = event.Records[0].body
+  const msgReceiveCount = event.Records[0].attributes?.ApproximateReceiveCount
   if (body[0] === '{') {
     try {
       const { body: carId, skipExists } = JSON.parse(body)
-      return { carId, skipExists }
+      return { carId, skipExists, msgReceiveCount }
     } catch {
       throw new Error('Invalid JSON in event body: ' + body)
     }
   }
-  return { carId: event.Records[0].body }
+  return { carId: event.Records[0].body, msgReceiveCount }
 }
 
 /**
@@ -41,15 +42,14 @@ function parseEvent(event) {
  * @param {Event} event
  */
 async function main(event) {
-  const { carId, skipExists } = parseEvent(event)
+  const { carId, skipExists, msgReceiveCount } = parseEvent(event)
 
   try {
     logger.debug('Indexing CARs progress')
-
     const carLogger = logger.child({ car: carId })
     await storeCar({ id: carId, skipExists, logger: carLogger })
   } catch (err) {
-    logger.error({ car: carId, error: serializeError(err) }, 'Cannot index the CAR file')
+    logger.error({ car: carId, error: serializeError(err) }, `Cannot index the CAR file. SQS MessageReceiveCount = ${msgReceiveCount}`)
     throw err
   } finally {
     telemetry.flush()
