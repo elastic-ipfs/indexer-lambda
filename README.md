@@ -25,7 +25,7 @@ _Variables in bold are required._
 
 ---
 
-Also check [AWS specific configuration](https://github.com/elastic-ipfs/elastic-ipfs/blob/main/aws.md).
+Also check [AWS specifics configuration](https://github.com/elastic-ipfs/elastic-ipfs/blob/main/aws.md).
 
 ## Indexing flow schema
 
