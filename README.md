@@ -6,9 +6,6 @@ _Variables in bold are required._
 
 | Name                        | Default            | Description                                                                    |
 | --------------------------- | ------------------ | ------------------------------------------------------------------------------ |
-| AWS_ACCESS_KEY_ID           |                    | The AWS key ID. [**This is not required when running in AWS services. Roles are configured in infrastructure**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)                  |
-| AWS_REGION                  |                    | The AWS region. [**This is not required when running in AWS services. Roles are configured in infrastructure**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)                   |
-| AWS_SECRET_ACCESS_KEY       |                    | The AWS access key. [**This is not required when running in AWS services. Roles are configured in infrastructure**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)               |
 | CONCURRENCY                 | `32`               | Concurrent batch inserts of blocks.                                            |
 | BLOCKS_BATCH_SIZE           | `10`               | Batch size for blocks ops (insert, publish). 10 is max for SQS, 25 is max for Dynamo |
 | DYNAMO_BLOCKS_TABLE         | `v1-blocks`        | The DynamoDB table where store CIDs informations to.                           |
@@ -27,6 +24,8 @@ _Variables in bold are required._
 | SQS_PUBLISHING_QUEUE_URL    |                    | The SQS topic to publish indexed multihashes to.                               |
 
 ---
+
+Also check [AWS specific configuration](https://github.com/elastic-ipfs/elastic-ipfs/blob/main/aws.md).
 
 ## Indexing flow schema
 
