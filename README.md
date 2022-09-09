@@ -6,11 +6,6 @@ _Variables in bold are required._
 
 | Name                        | Default            | Description                                                                    |
 | --------------------------- | ------------------ | ------------------------------------------------------------------------------ |
-| AWS_ACCESS_KEY_ID           |                    | The AWS key ID. **This is also required as GitHub repository secret.**         |
-| AWS_ACCOUNT_ID              |                    | The AWS account id. **This is only required as GitHub repository secret.**     |
-| AWS_ECR_REPOSITORY          |                    | The AWS ECR repository. **This is only required as GitHub repository secret.** |
-| AWS_REGION                  |                    | The AWS region. **This is also required as GitHub repository secret.**         |
-| AWS_SECRET_ACCESS_KEY       |                    | The AWS access key. **This is also required as GitHub repository secret.**     |
 | CONCURRENCY                 | `32`               | Concurrent batch inserts of blocks.                                            |
 | BLOCKS_BATCH_SIZE           | `10`               | Batch size for blocks ops (insert, publish). 10 is max for SQS, 25 is max for Dynamo |
 | DYNAMO_BLOCKS_TABLE         | `v1-blocks`        | The DynamoDB table where store CIDs informations to.                           |
@@ -29,6 +24,8 @@ _Variables in bold are required._
 | SQS_PUBLISHING_QUEUE_URL    |                    | The SQS topic to publish indexed multihashes to.                               |
 
 ---
+
+Also check [AWS specifics configuration](https://github.com/elastic-ipfs/elastic-ipfs/blob/main/aws.md).
 
 ## Indexing flow schema
 
