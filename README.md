@@ -43,3 +43,7 @@ If a batch fails, the lambda execution is suddenly interrupted.
 Eventually, the new `car` is published.
 
 Note that the `DynamoDB` operations are _upsert_, so if an issue happens, the lambda just fails, without any resume state, and in the following execution will update existing records and will insert the missing ones.
+
+## Issues
+
+Please report issues in the [elastic-ipfs/elastic-ipfs repo](https://github.com/elastic-ipfs/elastic-ipfs/issues).
