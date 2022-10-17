@@ -50,7 +50,7 @@ t.test('batchWriteDynamoItems', async t => {
 
   t.test('should handle unprocessed items from batch write response', async t => {
     const unprocessedItems =
-      { 'prod-ep-v1-blocks': [{ 'PutRequest': { 'Item': { 'type': { 'S': 'raw' }, 'createdAt': { 'S': '2022-10-16T20:34:14.465Z' }, 'multihash': { 'S': 'z2DrjgbByyopTuqrKjRhhSJWksbK3FcfxicDvBav7gPzoXDfWdf' } } } }] }
+      { 'prod-ep-v1-blocks': [{ PutRequest: { Item: { type: { S: 'raw' }, createdAt: { S: '2022-10-16T20:34:14.465Z' }, multihash: { S: 'z2DrjgbByyopTuqrKjRhhSJWksbK3FcfxicDvBav7gPzoXDfWdf' } } } }] }
 
     const firstRequest = {
       table1: [{ PutRequest: { Item: { block: { S: 'abc' }, car: { S: '123' }, offset: { N: '1' }, length: { N: '2' } } } }],
@@ -89,9 +89,9 @@ t.test('batchWriteDynamoItems', async t => {
 
   t.test('should handle more unprocessed items from batch write response', async t => {
     const unprocessedItems1 =
-      { 'prod-ep-v1-blocks': [{ 'PutRequest': { 'Item': { 'type': { 'S': 'raw' }, 'createdAt': { 'S': '2022-10-16T20:34:14.465Z' }, 'multihash': { 'S': 'hash1' } } } }] }
+      { 'prod-ep-v1-blocks': [{ PutRequest: { Item: { type: { S: 'raw' }, createdAt: { S: '2022-10-16T20:34:14.465Z' }, multihash: { S: 'hash1' } } } }] }
     const unprocessedItems2 =
-      { 'prod-ep-v1-blocks': [{ 'PutRequest': { 'Item': { 'type': { 'S': 'raw' }, 'createdAt': { 'S': '2022-10-16T20:34:14.465Z' }, 'multihash': { 'S': 'hash2' } } } }] }
+      { 'prod-ep-v1-blocks': [{ PutRequest: { Item: { type: { S: 'raw' }, createdAt: { S: '2022-10-16T20:34:14.465Z' }, multihash: { S: 'hash2' } } } }] }
 
     const firstRequest = {
       table1: [{ PutRequest: { Item: { block: { S: 'abc' }, car: { S: '123' }, offset: { N: '1' }, length: { N: '2' } } } }],
