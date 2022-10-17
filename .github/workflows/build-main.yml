@@ -2,7 +2,7 @@
 name: Build And Deploy
 on:
   push:
-    branches: [workflow-update]
+    branches: [main]
 env:
   REGISTRY: ghcr.io
 jobs: # We need two separate builds as each is going to a different ECR repo
