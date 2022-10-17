@@ -17,35 +17,35 @@
     "invoke": "aws lambda invoke --cli-binary-format raw-in-base64-out --region $AWS_REGION --function-name $LAMBDA --payload file://event.json --log-type Tail /dev/null | jq -r .LogResult | base64 -d"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.118.1",
-    "@aws-sdk/client-s3": "^3.118.1",
-    "@aws-sdk/client-sns": "^3.137.0",
-    "@aws-sdk/client-sqs": "^3.118.1",
-    "@aws-sdk/util-dynamodb": "^3.118.1",
-    "@ipld/car": "^3.2.4",
-    "@ipld/dag-cbor": "^6.0.15",
-    "@ipld/dag-pb": "^2.1.17",
-    "dag-jose": "^1.0.0",
-    "dotenv": "^16.0.1",
-    "hdr-histogram-js": "^3.0.0",
-    "ipfs-unixfs": "^6.0.9",
-    "js-yaml": "^4.1.0",
-    "multiformats": "^9.7.0",
-    "pino": "^7.2.0"
+    "@aws-sdk/client-dynamodb": "3.188.0",
+    "@aws-sdk/client-s3": "3.188.0",
+    "@aws-sdk/client-sns": "3.188.0",
+    "@aws-sdk/client-sqs": "3.188.0",
+    "@aws-sdk/util-dynamodb": "3.188.0",
+    "@ipld/car": "4.1.6",
+    "@ipld/dag-cbor": "7.0.3",
+    "@ipld/dag-pb": "2.1.18",
+    "dag-jose": "1.0.0",
+    "dotenv": "16.0.3",
+    "hdr-histogram-js": "3.0.0",
+    "ipfs-unixfs": "6.0.9",
+    "js-yaml": "4.1.0",
+    "multiformats": "9.9.0",
+    "pino": "8.6.1"
   },
   "devDependencies": {
-    "aws-sdk-client-mock": "^1.0.0",
-    "c8": "^7.11.3",
-    "eslint": "^7.32.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.1",
-    "pino-pretty": "^7.2.0",
-    "prettier": "^2.7.1",
-    "tap": "^15.1.6"
+    "aws-sdk-client-mock": "2.0.0",
+    "c8": "7.12.0",
+    "eslint": "8.25.0",
+    "eslint-config-standard": "17.0.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "6.1.0",
+    "pino-pretty": "9.1.1",
+    "prettier": "2.7.1",
+    "tap": "16.3.0"
   },
   "engines": {
-    "node": ">=14.15.0"
+    "node": "16"
   }
 }
