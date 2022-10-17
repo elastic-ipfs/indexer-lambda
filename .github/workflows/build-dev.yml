@@ -9,7 +9,7 @@ jobs:
     permissions:
       packages: write
       id-token: write
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@workflow-update
     with:
       docker_image_version_suffix_label: dev
     secrets:
@@ -18,7 +18,7 @@ jobs:
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY_DEV }}
   deploy:
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@workflow-update
     permissions:
       id-token: write
     needs: build

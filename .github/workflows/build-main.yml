@@ -2,7 +2,7 @@
 name: Build And Deploy
 on:
   push:
-    branches: [main]
+    branches: [workflow-update]
 env:
   REGISTRY: ghcr.io
 jobs: # We need two separate builds as each is going to a different ECR repo
@@ -10,7 +10,7 @@ jobs: # We need two separate builds as each is going to a different ECR repo
     permissions:
       packages: write
       id-token: write
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@workflow-update
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
       aws_role_id: ${{ secrets.AWS_ROLE_ID }}
@@ -20,14 +20,14 @@ jobs: # We need two separate builds as each is going to a different ECR repo
     permissions:
       packages: write
       id-token: write
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@workflow-update
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
       aws_role_id: ${{ secrets.AWS_ROLE_ID }}
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY }}
   deploy-to-staging:
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@workflow-update
     permissions:
       id-token: write
     needs: build-staging
@@ -41,7 +41,7 @@ jobs: # We need two separate builds as each is going to a different ECR repo
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY_STAGING }}
   deploy-to-prod:
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@main
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@workflow-update
     permissions:
       id-token: write
     needs: build-prod
