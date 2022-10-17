@@ -68,12 +68,20 @@ async function createDynamoItem({ table, keyName, keyValue, data = {}, logger })
 async function batchWriteDynamoItems({ batch, logger }) {
   try {
     telemetry.increaseCount('dynamo-batch-inserts')
-    const request = composeBatchInsert(batch)
-    const command = new BatchWriteItemCommand(request)
-    const response = await telemetry.trackDuration('dynamo-batch-inserts', sendCommand({ client: dynamoClient, command, logger }))
-    if (response?.UnprocessedItems && Object.keys(response.UnprocessedItems).length > 0) {
-      logger.warn({ UnprocessedItems: JSON.stringify(response.UnprocessedItems) }, 'UnprocessedItems in BatchWriteItemCommand')
-    }
+    let request = composeBatchInsert(batch)
+    let done
+    do {
+      const command = new BatchWriteItemCommand(request)
+      const response = await telemetry.trackDuration('dynamo-batch-inserts', sendCommand({ client: dynamoClient, command, logger }))
+      if (response?.UnprocessedItems && Object.keys(response.UnprocessedItems).length > 0) {
+        telemetry.increaseCount('dynamo-unprocessed-items')
+        logger.warn({ UnprocessedItems: JSON.stringify(response.UnprocessedItems) }, 'UnprocessedItems in BatchWriteItemCommand')
+        request = { RequestItems: response.UnprocessedItems }
+        await sleep(dynamoRetryDelay)
+        continue
+      }
+      done = true
+    } while (!done)
     // todo retry if error https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.TransactionalErrors
   } catch (error) {
     logger.error({ error: serializeError(error), batch }, 'Cannot write batch items to DynamoDB table')
