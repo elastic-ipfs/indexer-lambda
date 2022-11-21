@@ -10,7 +10,7 @@ jobs: # We need two separate builds as each is going to a different ECR repo
     permissions:
       packages: write
       id-token: write
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@deprecated-commands
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@main
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
       aws_role_id: ${{ secrets.AWS_ROLE_ID }}
