@@ -24,7 +24,7 @@ jobs: # We need two separate builds as each is going to a different ECR repo
     with:
       deploy_to_environment: staging
       lambda: staging-ep-indexer
-      docker_image_version: ${{ needs.build-staging.outputs.build_date }}
+      docker_image_version: test-workflow-${{ needs.build-staging.outputs.build_date }}
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
       aws_role_id: ${{ secrets.AWS_ROLE_ID }}
