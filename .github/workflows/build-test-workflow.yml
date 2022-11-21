@@ -10,14 +10,14 @@ jobs: # We need two separate builds as each is going to a different ECR repo
     permissions:
       packages: write
       id-token: write
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@test-new-shared-workflow
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-build.yaml@deprecated-commands
     secrets:
       aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
       aws_role_id: ${{ secrets.AWS_ROLE_ID }}
       aws_region: ${{ secrets.AWS_REGION }}
       aws_ecr_repository: ${{ secrets.AWS_ECR_REPOSITORY_STAGING }}
   deploy-to-staging:
-    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@test-new-shared-workflow
+    uses: elastic-ipfs/shared-workflows/.github/workflows/lambda-shared-deploy.yaml@deprecated-commands
     permissions:
       id-token: write
     needs: build-staging
