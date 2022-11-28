@@ -47,7 +47,7 @@ async function main(event) {
   try {
     logger.debug('Indexing CARs progress')
     const carLogger = logger.child({ car: carId })
-    logger.info({car: carId, msgCount: msgReceiveCount, message: 'Message to be indexed'})
+    logger.info({ car: carId, msgCount: msgReceiveCount, message: 'Message to be indexed' })
     await storeCar({ id: carId, skipExists, logger: carLogger })
   } catch (err) {
     logger.error({ car: carId, error: serializeError(err) }, `Cannot index the CAR file. SQS MessageReceiveCount = ${msgReceiveCount}`)
