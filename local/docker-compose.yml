@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  indexer-lambda-rie:
+    image: "elastic-ipfs/indexer-lambda:local"
+    container_name: indexer-lambda-rie
+    ports:
+      - "9090:8080"
+    volumes:
+      - "$HOME/.aws-lambda-rie:/aws-lambda"
+    environment:
+      LOG_LEVEL: debug
+      LOG_PRETTY: 1
+      AWS_REGION: us-west-2
+      AWS_ACCESS_KEY_ID: DUMMYIDEXAMPLE
+      AWS_SECRET_ACCESS_KEY: DUMMYIDEXAMPLE
+      DYNAMO_ENDPOINT_URL: http://dynamodb-local:8000
+      DYNAMO_BLOCKS_TABLE: local-ep-v1-blocks
+      DYNAMO_CARS_TABLE: local-ep-v1-cars
+      DYNAMO_LINK_TABLE: local-ep-v1-blocks-cars-position
+      #SNS_EVENTS_TOPIC: TODO
+      #SQS_PUBLISHING_QUEUE_URL: TODO
+      S3_ENDPOINT_URL: http://minio.local:9000
+    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/aws-lambda-ric index.handler
+    networks:
+      - my_net
+
+networks:
+  my_net:

@@ -1,5 +1,6 @@
 'use strict'
 
+const config = require('../config')
 const { DynamoDBClient, GetItemCommand, PutItemCommand, BatchWriteItemCommand } = require('@aws-sdk/client-dynamodb')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb')
@@ -13,9 +14,14 @@ const telemetry = require('./telemetry')
 
 const agent = new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
 
-const dynamoClient = new DynamoDBClient({
+const dynamoClientConfig = {
   requestHandler: new NodeHttpHandler({ httpsAgent: agent })
-})
+}
+// support for non-standard or local dynamo stacks
+if (config.dynamoEndpointUrl) {
+  dynamoClientConfig.endpoint = config.dynamoEndpointUrl
+}
+const dynamoClient = new DynamoDBClient(dynamoClientConfig)
 
 function cidToKey(cid) {
   return base58.encode(cid.multihash.bytes)

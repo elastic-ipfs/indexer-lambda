@@ -12,23 +12,29 @@ const telemetry = require('./telemetry')
 
 const s3Clients = {}
 
-async function openS3Stream({ bucketRegion, url, logger, retries = config.s3MaxRetries, retryDelay = config.s3RetryDelay }) {
+async function openS3Stream({ bucketRegion, url, logger, bucket, key, retries = config.s3MaxRetries, retryDelay = config.s3RetryDelay }) {
   /** @type {import('@aws-sdk/client-s3').GetObjectCommandOutput} */
   let s3Request
 
   if (!s3Clients[bucketRegion]) {
-    s3Clients[bucketRegion] = new S3Client({
+    logger.info("Connectiong to S3 at endpoint '%s' in region '%s'", config.s3EndpointUrl, bucketRegion)
+    const s3ClientConfig = {
       region: bucketRegion,
       requestHandler: new NodeHttpHandler({
         httpsAgent: new Agent({ keepAlive: true, keepAliveMsecs: 60000 })
       })
-    })
+    }
+    // support for non-standard or local S3 stacks
+    if (config.s3EndpointUrl) {
+      s3ClientConfig.endpoint = config.s3EndpointUrl
+      s3ClientConfig.s3ForcePathStyle = true
+      s3ClientConfig.disableHostPrefix = true
+    }
+
+    s3Clients[bucketRegion] = new S3Client(s3ClientConfig)
   }
   const s3Client = s3Clients[bucketRegion]
   telemetry.increaseCount('s3-fetchs')
-
-  const Bucket = url.hostname
-  const Key = url.pathname.slice(1)
 
   let attempts = 0
   let error
@@ -36,7 +42,7 @@ async function openS3Stream({ bucketRegion, url, logger, retries = config.s3MaxR
     error = null
     try {
       // this imports just the getObject operation from S3
-      s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket, Key })))
+      s3Request = await telemetry.trackDuration('s3-fetchs', s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: key })))
       break
     } catch (err) {
       if (err.code === 'NoSuchKey') {

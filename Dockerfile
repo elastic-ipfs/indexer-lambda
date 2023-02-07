@@ -1,5 +1,5 @@
 # Stage one - install
-FROM node:16-alpine as base
+FROM node:16-alpine3.16 as base
 ENV NODE_ENV production
 ENV GLIBC_VERSION 2.34-r0
 ENV LANG en_US.UTF-8
@@ -10,14 +10,16 @@ RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/s
   && wget -q -O glibc-bin.apk https://github.com/sgerrand/alpine-pkg-glibc/releases/download/$GLIBC_VERSION/glibc-bin-$GLIBC_VERSION.apk \ 
   && wget -q -O glibc-i18n.apk https://github.com/sgerrand/alpine-pkg-glibc/releases/download/$GLIBC_VERSION/glibc-i18n-$GLIBC_VERSION.apk
 
+RUN apk add --force-overwrite glibc.apk \
+  glibc-bin.apk \
+  glibc-i18n.apk \
+  && apk fix --force-overwrite alpine-baselayout-data
+
 RUN apk add -U autoconf \
   automake \
   build-base \
   cmake \
   curl \
-  glibc.apk \
-  glibc-bin.apk \
-  glibc-i18n.apk \
   libcurl \
   libexecinfo-dev \ 
   libffi-dev \
@@ -46,7 +48,7 @@ RUN npm ci --production
 COPY src /app
 
 # Stage two, final build
-FROM node:16-alpine as final
+FROM node:16-alpine3.16 as final
 WORKDIR /app
 # Copy GLIBC data
 COPY --from=base /etc/ld.so.cache /etc/ld.so.cache

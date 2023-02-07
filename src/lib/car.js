@@ -16,7 +16,7 @@ function validateCar(id) {
       return
     }
     const [, bucketRegion, bucketName, key] = info
-    const url = new URL(`s3://${bucketName}/${key}`)
+    const url = (config.s3EndpointUrl) ? new URL(`${config.s3EndpointUrl}/${bucketName}/${key}`) : new URL(`s3://${bucketName}/${key}`)
     return { url, id, bucketRegion, bucketName, key }
     /* c8 ignore next */
   } catch (error) {}
@@ -27,7 +27,7 @@ function validateCar(id) {
  * @async
  */
 function openSource({ car, logger }) {
-  return openS3Stream({ bucketRegion: car.bucketRegion, url: car.url, logger })
+  return openS3Stream({ bucketRegion: car.bucketRegion, url: car.url, bucket: car.bucketName, key: car.key, logger })
 }
 
 /**

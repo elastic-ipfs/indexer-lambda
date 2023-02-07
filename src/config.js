@@ -8,6 +8,8 @@ require('dotenv').config({ path: process.env.ENV_FILE_PATH || resolve(process.cw
 const {
   CONCURRENCY: rawConcurrency,
 
+  DYNAMO_ENDPOINT_URL: dynamoEndpointUrl,
+
   DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
   DYNAMO_LINK_TABLE: linkTable,
@@ -21,6 +23,7 @@ const {
 
   SQS_PUBLISHING_QUEUE_URL: publishingQueue,
 
+  S3_ENDPOINT_URL: s3EndpointUrl,
   S3_MAX_RETRIES: s3MaxRetries,
   S3_RETRY_DELAY: s3RetryDelay
 } = process.env
@@ -72,9 +75,11 @@ module.exports = {
 
   blocksBatchSize: blocksBatchSize ? parseInt(blocksBatchSize, 10) : 10,
 
+  dynamoEndpointUrl,
   dynamoMaxRetries: dynamoMaxRetries ?? 3,
   dynamoRetryDelay: dynamoRetryDelay ?? 100, // ms
 
+  s3EndpointUrl,
   s3MaxRetries: s3MaxRetries ?? 3,
   s3RetryDelay: s3RetryDelay ?? 100 // ms
 }
