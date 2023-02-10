@@ -1,50 +1,10 @@
 'use strict'
 
-const {
-  UnixFS: { unmarshal: decodeUnixFs }
-} = require('ipfs-unixfs')
 const config = require('../config')
-const { now, queuedTasks } = require('./util')
+const { queuedTasks } = require('./util')
 const { serializeError } = require('./logging')
 const { cidToKey, batchWriteDynamoItems } = require('./storage')
 const { publishBatch } = require('./publish')
-
-function blockType(blockId, codecs = config.codecs) {
-  return codecs[blockId.code]?.label ?? 'unsupported'
-}
-
-function blockData(block) {
-  if (!block.data) {
-    return
-  }
-
-  const data = decodeBlock(block)
-  if (data.Links) {
-    for (const link of data.Links) {
-      link.Hash = link.Hash?.toString()
-    }
-  }
-
-  return data
-}
-
-function decodeBlock(block, codecs = config.codecs) {
-  const codec = codecs[block.cid.code]
-
-  if (!codec) {
-    throw new Error(`Unsupported codec ${block.cid.code} in the block at offset ${block.blockOffset}`)
-  }
-
-  const data = codec.decode(block.data)
-
-  if (codec.label.startsWith('dag')) {
-    const { type, blocks } = decodeUnixFs(data.Data)
-
-    data.Data = { type, blocks }
-  }
-
-  return data
-}
 
 async function publishBlocks({ blocks, logger, queue = config.publishingQueue }) {
   await publishBatch({ queue, messages: blocks.map(b => b.key), logger })
@@ -98,7 +58,6 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
  * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations
  */
 async function writeBlocksBatch({ blocks, car, logger }) {
-  const blockItems = []
   const linkItems = []
   const keys = []
   for (let i = 0; i < blocks.length; i++) {
@@ -112,13 +71,6 @@ async function writeBlocksBatch({ blocks, car, logger }) {
       continue
     }
 
-    blockItems.push({
-      [config.blocksTablePrimaryKey]: block.key,
-      type: blockType(block.cid),
-      createdAt: now(),
-      data: blockData(block)
-    })
-
     linkItems.push({
       [config.linkTableBlockKey]: block.key,
       [config.linkTableCarKey]: car.id,
@@ -131,7 +83,6 @@ async function writeBlocksBatch({ blocks, car, logger }) {
   }
 
   const batch = [
-    { table: config.blocksTable, items: blockItems },
     { table: config.linkTable, items: linkItems }
   ]
 

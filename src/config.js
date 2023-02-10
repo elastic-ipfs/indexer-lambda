@@ -8,7 +8,6 @@ require('dotenv').config({ path: process.env.ENV_FILE_PATH || resolve(process.cw
 const {
   CONCURRENCY: rawConcurrency,
 
-  DYNAMO_BLOCKS_TABLE: blocksTable,
   DYNAMO_CARS_TABLE: carsTable,
   DYNAMO_LINK_TABLE: linkTable,
 
@@ -49,11 +48,9 @@ const concurrency = parseInt(rawConcurrency)
 
 module.exports = {
   RAW_BLOCK_CODEC,
-  blocksTable: blocksTable ?? 'v1-blocks',
   carsTable: carsTable ?? 'v1-cars',
   linkTable: linkTable ?? 'v1-blocks-cars-position',
 
-  blocksTablePrimaryKey: 'multihash',
   carsTablePrimaryKey: 'path',
   linkTableBlockKey: 'blockmultihash',
   linkTableCarKey: 'carpath',
