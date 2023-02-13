@@ -8,7 +8,6 @@ _Variables in bold are required._
 | --------------------------- | ------------------ | ------------------------------------------------------------------------------ |
 | CONCURRENCY                 | `32`               | Concurrent batch inserts of blocks.                                            |
 | BLOCKS_BATCH_SIZE           | `10`               | Batch size for blocks ops (insert, publish). 10 is max for SQS, 25 is max for Dynamo |
-| DYNAMO_BLOCKS_TABLE         | `v1-blocks`        | The DynamoDB table where store CIDs informations to.                           |
 | DYNAMO_CARS_TABLE           | `v1-cars`          | The DynamoDB table where store CAR files informations to.                      |
 | DYNAMO_LINK_TABLE           | `v1-blocks-cars-position`   | The DynamoDB table with CARs-blocks links.                                     |
 | DYNAMO_MAX_RETRIES          | `3`                | DynamoDB max attempts in case of query failure.                                |

@@ -11,68 +11,6 @@ Object {
     "batchCreates": Array [
       Object {
         "RequestItems": Object {
-          "v1-blocks": Array [
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmY13QWtykrcwmQmLVdxAQnJsRq7xBs5FAqH5zpG9ZvJpC",
-                  },
-                  "type": Object {
-                    "S": "raw",
-                  },
-                },
-              },
-            },
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmSGtsqx7aYH8gP21AgidxXuX5vsseFJgHKa75kg8HepXL",
-                  },
-                  "type": Object {
-                    "S": "dag-pb",
-                  },
-                },
-              },
-            },
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmSHc8o3PxQgMccYgGtuStaNQKXTBX1rTHN5W9cUCwrcHX",
-                  },
-                  "type": Object {
-                    "S": "dag-pb",
-                  },
-                },
-              },
-            },
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmTgGQZ3ZcbcHxZiFNHs76Y7Ca8DfFGjdsxXDVnr41h339",
-                  },
-                  "type": Object {
-                    "S": "dag-pb",
-                  },
-                },
-              },
-            },
-          ],
           "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
@@ -151,23 +89,6 @@ Object {
       },
       Object {
         "RequestItems": Object {
-          "v1-blocks": Array [
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn",
-                  },
-                  "type": Object {
-                    "S": "dag-pb",
-                  },
-                },
-              },
-            },
-          ],
           "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
@@ -271,23 +192,6 @@ Object {
     "batchCreates": Array [
       Object {
         "RequestItems": Object {
-          "v1-blocks": Array [
-            Object {
-              "PutRequest": Object {
-                "Item": Object {
-                  "createdAt": Object {
-                    "S": "2022-06-24T15:15:17.401Z",
-                  },
-                  "multihash": Object {
-                    "S": "zQmPH3Su9xAqw4WRbXT6DvwNpmaXYvTKKAY2hBKJsC7j2b4",
-                  },
-                  "type": Object {
-                    "S": "unsupported",
-                  },
-                },
-              },
-            },
-          ],
           "v1-blocks-cars-position": Array [
             Object {
               "PutRequest": Object {
