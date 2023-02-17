@@ -46,3 +46,28 @@ Note that the `DynamoDB` operations are _upsert_, so if an issue happens, the la
 ## Issues
 
 Please report issues in the [elastic-ipfs/elastic-ipfs repo](https://github.com/elastic-ipfs/elastic-ipfs/issues).
+
+## Contribute and release process
+
+This is the process to contribute and get a new build deployed:
+
+- Create a Pull Request with the intended change
+- Get a review from one of the team members
+- Deploy the Pull Request branch into a dev build using Github Action `Dev | Build And Deploy` and selecting branch
+- Unit test Dev build lambda in [AWS Console](https://us-west-2.console.aws.amazon.com/lambda/home?region=us-west-2#/functions/dev-ep-indexer?tab=testing) with a given Event JSON (example below). Validate lambda output and the dynamoDB tables used by this lambda.
+- Run [`bitswap-e2e-tests`](https://github.com/elastic-ipfs/bitswap-e2e-tests/actions/workflows/dispatch-regressions.yaml) for the `Dev` build.
+- Merge Pull Request after being approved
+- Staging release will be automatically created
+- Production release will need to be authorized by one of the admins of the repo.
+
+For Dev build lambda unit test, you can use Event JSON:
+
+```json
+{
+  "Records": [
+    {
+      "body": "us-east-2/dotstorage-dev-0/100KB.car"
+    }
+  ]
+}
+```
