@@ -1,5 +1,7 @@
 'use strict'
 
+const { validateBlock } = require('@web3-storage/car-block-validator')
+
 const config = require('../config')
 const { queuedTasks } = require('./util')
 const { serializeError } = require('./logging')
@@ -60,10 +62,23 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
 async function writeBlocksBatch({ blocks, car, logger }) {
   const linkItems = []
   const keys = []
+  // TODO: Validate all the blocks first
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
     if (!block.key) {
       block.key = cidToKey(block.cid)
+    }
+
+    // Validate block
+    try {
+      await validateBlock({
+        cid: block.cid,
+        bytes: block.data
+      })
+    } catch (error) {
+      logger.error({ error: serializeError(error) }, 'Error validating block')
+      console.log('not valid block', error)
+      continue
     }
 
     // HOTFIX

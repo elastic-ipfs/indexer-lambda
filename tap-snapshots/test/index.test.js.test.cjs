@@ -186,6 +186,66 @@ Object {
 }
 `
 
+exports[`test/index.test.js TAP handler indexes a new car file with invalid blocks > must match snapshot 1`] = `
+Object {
+  "dynamo": Object {
+    "batchCreates": Array [
+      Object {
+        "RequestItems": Object {
+          "v1-blocks-cars-position": Array [],
+        },
+      },
+    ],
+    "creates": Array [
+      Object {
+        "Item": Object {
+          "bucket": Object {
+            "S": "cars",
+          },
+          "bucketRegion": Object {
+            "S": "us-east-2",
+          },
+          "createdAt": Object {
+            "S": "2022-06-24T15:15:17.401Z",
+          },
+          "key": Object {
+            "S": "file3.car",
+          },
+          "path": Object {
+            "S": "us-east-2/cars/file3.car",
+          },
+          "roots": Object {
+            "L": Array [
+              Object {
+                "S": "bafkreiadsbmmn4waznesyuz3bjgrj33xzqhxrk6mz3ksq7meugrachh3qe",
+              },
+            ],
+          },
+          "version": Object {
+            "N": "1",
+          },
+        },
+        "TableName": "v1-cars",
+      },
+    ],
+  },
+  "sqs": Object {
+    "batchPublishes": Array [
+      Object {
+        "Entries": Array [
+          Object {
+            "Id": "zQmNaZbPKs9E11qawNuEs7mSW7KXQ7TQ6Y2X2ovcvE1sUJk",
+            "MessageBody": "zQmNaZbPKs9E11qawNuEs7mSW7KXQ7TQ6Y2X2ovcvE1sUJk",
+          },
+        ],
+        "QueueUrl": "publishingQueue",
+      },
+    ],
+    "publishes": Array [],
+  },
+}
+`
+
 exports[`test/index.test.js TAP handler indexes a new car file with unsupported blocks > must match snapshot 1`] = `
 Object {
   "dynamo": Object {
