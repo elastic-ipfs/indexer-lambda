@@ -62,7 +62,6 @@ async function storeBlocks({ car, source, logger, batchSize = config.blocksBatch
 async function writeBlocksBatch({ blocks, car, logger }) {
   const linkItems = []
   const keys = []
-  // TODO: Validate all the blocks first
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
     if (!block.key) {

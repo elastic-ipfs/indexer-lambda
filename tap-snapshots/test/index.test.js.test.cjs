@@ -186,7 +186,7 @@ Object {
 }
 `
 
-exports[`test/index.test.js TAP handler indexes a new car file with invalid blocks > must match snapshot 1`] = `
+exports[`test/index.test.js TAP handler indexes a new car file but not invalid blocks > must match snapshot 1`] = `
 Object {
   "dynamo": Object {
     "batchCreates": Array [
