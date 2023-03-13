@@ -1,6 +1,12 @@
 'use strict'
 
 const t = require('tap')
+const { CarWriter } = require('@ipld/car')
+const { CID } = require('multiformats/cid')
+const raw = require('multiformats/codecs/raw')
+const { sha256 } = require('multiformats/hashes/sha2')
+const { concat } = require('uint8arrays/concat')
+
 const config = require('../src/config')
 const { handler } = require('../src/index')
 const { Nanoseconds, NANOSECONDS_UNECE_UNIT_CODE } = require('../src/lib/time')
@@ -19,6 +25,31 @@ t.test('handler', async t => {
     t.equal(t.context.sns.publishes.length, 1)
     const [publish] = t.context.sns.publishes
     assertIsIndexerCompletedPublish(t, publish)
+    t.matchSnapshot({ dynamo: t.context.dynamo, sqs: t.context.sqs })
+  })
+
+  t.test('indexes a new car file but not invalid blocks', async t => {
+    const bytes = new Uint8Array([1, 2, 3])
+    const hash = await sha256.digest(bytes)
+    const cid = CID.create(1, raw.code, hash)
+    bytes[bytes.length - 1] = bytes[bytes.length - 1] + 1 // mangle a byte
+    const { writer, out } = CarWriter.create([cid])
+    writer.put({ cid, bytes })
+    writer.close()
+
+    const carParts = []
+    for await (const part of out) {
+      carParts.push(part)
+    }
+    const carBytes = concat(carParts)
+
+    mockS3GetObject('cars', 'file3.car', Buffer.from(carBytes))
+    mockDynamoGetItemCommand(config.carsTable, config.carsTablePrimaryKey, 'us-east-2/cars/file3.car', undefined)
+    trackDynamoUsages(t)
+    trackSQSUsages(t)
+
+    await handler(helper.generateEvent({ bucketRegion: 'us-east-2', bucket: 'cars', key: 'file3.car' }))
+
     t.matchSnapshot({ dynamo: t.context.dynamo, sqs: t.context.sqs })
   })
 
@@ -60,15 +91,6 @@ t.test('handler', async t => {
     await t.rejects(() => handler({ Records: [{ body: 'not-a-car-file' }] }),
       { message: 'Invalid CAR file format' })
   })
-
-  // disabled decodeBlocks https://github.com/elastic-ipfs/indexer-lambda/pull/54#discussion_r913665164
-  // t.test('fails indexing a new car file decoding unsupported blocks', async t => {
-  //   process.env.DECODE_BLOCKS = 'true'
-  //   mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)
-
-  //   await t.rejects(() => handler({ Records: [{ body: JSON.stringify({ body: 'us-east-2/cars/file2.car' }) }] }),
-  //     { message: 'Unsupported codec 35 in the block at offset 96' })
-  // })
 
   t.test('fails indexing a new car file decoding invalida body as json', async t => {
     mockS3GetObject('cars', 'file2.car', readMockData('cars/file2.car'), 148)

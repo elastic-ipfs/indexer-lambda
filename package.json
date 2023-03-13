@@ -25,6 +25,7 @@
     "@ipld/car": "4.1.6",
     "@ipld/dag-cbor": "7.0.3",
     "@ipld/dag-pb": "2.1.18",
+    "@web3-storage/car-block-validator": "^1.0.1",
     "dag-jose": "1.0.0",
     "dotenv": "16.0.3",
     "hdr-histogram-js": "3.0.0",
@@ -43,7 +44,8 @@
     "eslint-plugin-promise": "6.1.0",
     "pino-pretty": "9.1.1",
     "prettier": "2.7.1",
-    "tap": "16.3.0"
+    "tap": "16.3.0",
+    "uint8arrays": "3.1.1"
   },
   "engines": {
     "node": "16"

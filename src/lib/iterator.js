@@ -20,8 +20,7 @@ class CarIterator {
       const offset = (this.position = this.reader.pos)
       const { cid, length, blockLength } = await readBlockHead(this.reader)
       this.currentCid = cid
-      // disabled decodeBlocks https://github.com/elastic-ipfs/indexer-lambda/pull/54#discussion_r913665164
-      // const data = this.decodeBlocks && cid.code !== RAW_BLOCK_CODEC ? await this.reader.exactly(blockLength) : undefined
+      const data = await this.reader.exactly(blockLength)
 
       yield {
         cid,
@@ -29,7 +28,7 @@ class CarIterator {
         blockOffset: this.reader.pos,
         offset,
         length,
-        data: undefined
+        data
       }
 
       this.reader.seek(blockLength)
